@@ -20,6 +20,7 @@ def main():
     plt.show()
 
     model = KMeans("constrained_kmeans", data, K=3)
+    clusters = model.solve()
 
 
 if __name__ == '__main__':

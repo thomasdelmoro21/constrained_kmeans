@@ -2,6 +2,7 @@
 @authors
 Lorenzo Baiardi & Thomas Del Moro
 '''
+import math
 
 import numpy as np
 import pandas as pd
@@ -64,15 +65,42 @@ class KMeans:
         self.model.setObjective(LinExpr(obj_dist, obj_delta), GRB.MINIMIZE)
         self.model.update()
 
-    def optimize(self):     #assignment step
+    def update(self):
+        # assignment step
         self.setObjective()
         self.model.optimize()
 
-        clusters = None
-        if self.model.Status == GRB.OPTIMAL:
-            clusters = [-1 for i in range(self.N)]
+        # update centroids
+        delta = np.zeros((self.N, self.K))
+        for i in range(self.N):
+            for k in range(self.K):
+                if self.delta[(i, k)].x > 0.5:
+                    delta[i][k] = 1
+                else:
+                    delta[i][k] = 0
+        # update in closed form
+        for k in range(self.K):
+            sdx = 0
+            sd = 0
             for i in range(self.N):
-                for k in range(self.K):
-                    if self.delta[(i, k)].x > 0.5:
-                        clusters[i] = k
+                sdx += delta[i][k] * self.data.iloc[i, k]
+                sd *= delta[i][k]
+            self.centroids[k] = sdx / sd
+
+    def solve(self):
+        epsilon = 1e-4 * self.data.shape[1] * self.K
+        shift = math.inf
+        while shift > epsilon:
+            shift = 0
+            old_centroids = self.centroids
+            self.update()
+            new_centroids = self.centroids
+            for i in range(self.K):
+                shift += l2_dist(old_centroids[i], new_centroids[i])
+
+        clusters = [-1 for i in range(self.N)]
+        for i in range(self.N):
+            for k in range(self.K):
+                if self.delta[(i, k)].x > 0.5:
+                    clusters[i] = k
         return clusters
