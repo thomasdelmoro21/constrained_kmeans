@@ -11,8 +11,10 @@ from matplotlib import pyplot as plt
 
 from gurobipy import Model, GRB, LinExpr
 
+
 def l2_dist(x, y):
     return np.linalg.norm(x - y)
+
 
 class KMeans:
     def __init__(self, name, data, K):
@@ -20,8 +22,9 @@ class KMeans:
         self.data = data
         self.K = K
         self.N = data.shape[0]
-        self.model = self.create_model(name)
+        self.timeout = 5*60
         self.delta = dict()
+        self.model = self.create_model(name)
 
     def create_model(self, name):
         model = Model(name)
@@ -38,8 +41,8 @@ class KMeans:
             expr = LinExpr([1] * self.N, [self.delta[(i, k)] for i in range(self.N)])
             model.addConstr(expr, GRB.GREATER_EQUAL, C, 's%d' % i)
 
+        self.model = model
         self.centroids = self.inizialize_centers()
-        
         return model
 
     def inizialize_centers(self):
@@ -68,39 +71,40 @@ class KMeans:
     def update(self):
         # assignment step
         self.setObjective()
+        self.model.Params.TimeLimit = self.timeout
         self.model.optimize()
 
         # update centroids
         delta = np.zeros((self.N, self.K))
         for i in range(self.N):
             for k in range(self.K):
-                if self.delta[(i, k)].x > 0.5:
-                    delta[i][k] = 1
-                else:
-                    delta[i][k] = 0
+                delta[i][k] = 1 if self.delta[(i, k)].x > 0.5 else 0
         # update in closed form
         for k in range(self.K):
             sdx = 0
             sd = 0
             for i in range(self.N):
-                sdx += delta[i][k] * self.data.iloc[i, k]
+                sdx += delta[i][k] * self.data.iloc[i, :]
                 sd *= delta[i][k]
             self.centroids[k] = sdx / sd
+        return self.centroids, self.model.getObjective()
 
     def solve(self):
         epsilon = 1e-4 * self.data.shape[1] * self.K
         shift = math.inf
+        objective_values = []
         while shift > epsilon:
             shift = 0
             old_centroids = self.centroids
-            self.update()
-            new_centroids = self.centroids
+            new_centroids, obj_val = self.update()
+            objective_values.append(obj_val)
             for i in range(self.K):
                 shift += l2_dist(old_centroids[i], new_centroids[i])
+                print(shift)
 
         clusters = [-1 for i in range(self.N)]
         for i in range(self.N):
             for k in range(self.K):
                 if self.delta[(i, k)].x > 0.5:
                     clusters[i] = k
-        return clusters
+        return clusters, objective_values

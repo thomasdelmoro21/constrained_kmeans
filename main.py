@@ -19,8 +19,9 @@ def main():
     plt.scatter(v1, v2)
     plt.show()
 
-    model = KMeans("constrained_kmeans", data, K=3)
-    clusters = model.solve()
+    m = KMeans("constrained_kmeans", data, K=3)
+    clusters, objective_values = m.solve()
+    print(clusters)
 
 
 if __name__ == '__main__':
