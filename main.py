@@ -19,7 +19,7 @@ def main():
     plt.scatter(v1, v2)
     plt.show()
 
-    m = KMeans("constrained_kmeans", data, K=3)
+    m = KMeans("constrained_kmeans", data, k=3)
     clusters, objective_values = m.solve()
     print(clusters)
 
