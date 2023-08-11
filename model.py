@@ -22,7 +22,7 @@ class KMeans:
         self.data = data    # dataset
         self.k = k  # classes
         self.n = data.shape[0]
-        self.timeout = 5 * 60
+        self.timeout = 300
         self.indicators = dict()    # indicator variable of data point being associated with cluster
         self.model = self.create_model(name)    # gurobi model
 
@@ -88,14 +88,16 @@ class KMeans:
                 indicator[i][k] = 1 if self.indicators[(i, k)].x > 0.5 else 0
 
         # update in closed form
+        centroids = [[] for j in range(self.k)]
         for k in range(self.k):
             sdx = 0
             sd = 0
             for i in range(self.n):
                 sdx += indicator[i][k] * self.data.iloc[i, :]
-                sd *= indicator[i][k]
-            self.centroids[k] = sdx / sd
-        return self.centroids, self.model.getObjective()
+                sd += indicator[i][k]
+            centroids[k] = sdx / sd
+        self.centroids = centroids
+        return centroids
 
     def solve(self):
         epsilon = 1e-4 * self.data.shape[1] * self.k
@@ -104,12 +106,14 @@ class KMeans:
         while shift > epsilon:
             shift = 0
             old_centroids = self.centroids
-            new_centroids, obj_val = self.update()
-            objective_values.append(obj_val)
-            # calculated centroid shift
-            for i in range(self.k):
-                shift += l2_dist(old_centroids[i], new_centroids[i])
-                print(shift)
+            new_centroids = self.update()
+            if self.model.Status == GRB.OPTIMAL:
+                # calculated centroid shift
+                for i in range(self.k):
+                    print('old ', old_centroids[i])
+                    print('new ', new_centroids[i])
+                    shift += l2_dist(old_centroids[i], new_centroids[i])
+                    print('shift ', shift)
 
         clusters = [-1 for i in range(self.n)]
         for i in range(self.n):

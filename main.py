@@ -9,6 +9,17 @@ from matplotlib import pyplot as plt
 from model import KMeans
 
 
+def plot_clusters(dataset, clusters, k):
+    '''
+    dataset.insert(2, "cluster", clusters)
+    u_labels = np.unique(clusters)
+    print(u_labels)
+    for i in u_labels:
+        plt.scatter(dataset.iloc[2 == i, 0], dataset.iloc[2 == i, 1], label=i)
+    plt.legend()
+    plt.show()
+    '''
+
 def main():
     data = pd.read_csv("./xclara.csv")
     print(data.shape[0], data.shape[1])
@@ -19,10 +30,15 @@ def main():
     plt.scatter(v1, v2)
     plt.show()
 
-    m = KMeans("constrained_kmeans", data, k=3)
+    K = 3
+
+    m = KMeans("constrained_kmeans", data, K)
     clusters, objective_values = m.solve()
     print(clusters)
+    plot_clusters(data, clusters, K)
 
+    data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')
+    plt.show()
 
 if __name__ == '__main__':
     main()
