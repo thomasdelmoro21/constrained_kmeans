@@ -9,7 +9,7 @@ import pandas as pd
 import random
 from matplotlib import pyplot as plt
 
-from gurobipy import Model, GRB, LinExpr
+from gurobipy import Model, GRB, LinExpr, QuadExpr
 
 
 def l2_dist(x, y):
@@ -19,12 +19,12 @@ def l2_dist(x, y):
 class KMeans:
     def __init__(self, name, data, k):
         self.centroids = None
-        self.data = data    # dataset
+        self.data = data  # dataset
         self.k = k  # classes
         self.n = data.shape[0]
         self.timeout = 300
-        self.indicators = dict()    # indicator variable of data point being associated with cluster
-        self.model = self.create_model(name)    # gurobi model
+        self.indicators = dict()  # indicator variable of data point being associated with cluster
+        self.model = self.create_model(name)  # gurobi model
 
     def create_model(self, name):
         model = Model(name)
@@ -69,9 +69,9 @@ class KMeans:
         obj_indic = []
         distances = self.get_distances()
         for i in range(self.n):
-            for j in range(self.k):
-                obj_dist.append(distances[i][j])
-                obj_indic.append(self.indicators[(i, j)])
+            for k in range(self.k):
+                obj_dist.append(distances[i][k])
+                obj_indic.append(self.indicators[(i, k)])
         self.model.setObjective(LinExpr(obj_dist, obj_indic), GRB.MINIMIZE)
         self.model.update()
 
@@ -101,7 +101,7 @@ class KMeans:
 
     def solve(self):
         epsilon = 1e-4 * self.data.shape[1] * self.k
-        shift = math.inf    # centroid shift
+        shift = math.inf  # centroid shift
         objective_values = []
         while shift > epsilon:
             shift = 0
@@ -121,3 +121,83 @@ class KMeans:
                 if self.indicators[(i, k)].x > 0.5:
                     clusters[i] = k
         return clusters, objective_values
+
+
+class MIQKMeans:
+    def __init__(self, name, data, k):
+        self.data = data  # dataset
+        self.k = k  # classes
+        self.n = data.shape[0]
+        self.N = data.shape[1]
+        self.bigM = 1e100
+        self.timeout = 60
+        self.centroids = dict()
+        self.indicators = dict()  # indicator variable of data point being associated with cluster
+        self.distances = dict()
+        self.model = self.create_model(name)  # gurobi model
+
+    def create_model(self, name):
+        model = Model(name)
+        c = self.n / (2 * self.k)  # minimum number of instances contained in each cluster
+
+        # add indicator variables for every data and class
+        for i in range(self.n):
+            for k in range(self.k):
+                self.indicators[(i, k)] = model.addVar(lb=0.0, ub=1.0, vtype=GRB.BINARY)
+
+        # constraint element belonging to a unique cluster
+        for i in range(self.n):
+            expr = LinExpr([1] * self.k, [self.indicators[(i, k)] for k in range(self.k)])
+            model.addConstr(expr, GRB.EQUAL, 1.0, 'c%d' % i)
+
+        # constraint minimum of clusters
+        for k in range(self.k):
+            expr = LinExpr([1] * self.n, [self.indicators[(i, k)] for i in range(self.n)])
+            model.addConstr(expr, GRB.GREATER_EQUAL, c, 's%d' % i)
+
+        for i in range(self.n):
+            for j in range(self.N):
+                for k in range(self.k):
+                    self.distances[(i, j, k)] = model.addVar(vtype=GRB.CONTINUOUS)
+
+        for k in range(self.k):
+            for j in range(self.N):
+                self.centroids[(k, j)] = model.addVar(vtype=GRB.CONTINUOUS)
+
+        # constraints on distances
+        for i in range(self.n):
+            for j in range(self.N):
+                for k in range(self.k):
+                    expr = LinExpr(
+                        - self.bigM * (1 - self.indicators[(i, k)]) + (self.data.iloc[i, j] - self.centroids[(k, j)]))
+                    model.addConstr(self.distances[(i, j, k)], GRB.GREATER_EQUAL, expr)
+
+                    expr = LinExpr(
+                        self.bigM * (1 - self.indicators[(i, k)]) + (self.data.iloc[i, j] - self.centroids[(k, j)]))
+                    model.addConstr(self.distances[(i, j, k)], GRB.LESS_EQUAL, expr)
+
+        self.model = model
+        return model
+
+    def set_objective(self):
+        obj_coeff = [1] * (self.n * self.N * self.k)
+        obj_dist = []
+        for i in range(self.n):
+            for k in range(self.k):
+                for j in range(self.N):
+                    obj_dist.append(self.distances[(i, j, k)])
+        self.model.setObjective(LinExpr(obj_coeff, obj_dist) ** 2, GRB.MINIMIZE)
+        self.model.update()
+
+    def solve(self):
+        self.set_objective()
+        self.model.Params.TimeLimit = self.timeout
+        self.model.optimize()
+
+        clusters = [-1 for i in range(self.n)]
+        if self.model.Status == GRB.OPTIMAL:
+            for i in range(self.n):
+                for k in range(self.k):
+                    if self.indicators[(i, k)].x > 0.5:
+                        clusters[i] = k
+        return clusters

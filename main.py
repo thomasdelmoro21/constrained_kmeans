@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import random
 from matplotlib import pyplot as plt
-from model import KMeans
+from model import KMeans, MIQKMeans
 
 
 def plot_clusters(dataset, clusters, k):
@@ -32,10 +32,9 @@ def main():
 
     K = 3
 
-    m = KMeans("constrained_kmeans", data, K)
-    clusters, objective_values = m.solve()
+    m = MIQKMeans("constrained_kmeans", data, K)
+    clusters = m.solve()
     print(clusters)
-    plot_clusters(data, clusters, K)
 
     data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')
     plt.show()
