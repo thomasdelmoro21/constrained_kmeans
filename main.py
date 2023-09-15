@@ -33,7 +33,8 @@ def main():
     K = 3
 
     m = MIQKMeans("constrained_kmeans", data, K)
-    clusters = m.solve()
+    clusters, centroids = m.solve()
+    print(centroids)
     print(clusters)
 
     data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')

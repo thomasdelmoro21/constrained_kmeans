@@ -9,7 +9,7 @@ import pandas as pd
 import random
 from matplotlib import pyplot as plt
 
-from gurobipy import Model, GRB, LinExpr, QuadExpr
+from gurobipy import Model, GRB, LinExpr, QuadExpr, norm
 
 
 def l2_dist(x, y):
@@ -120,7 +120,7 @@ class KMeans:
             for k in range(self.k):
                 if self.indicators[(i, k)].x > 0.5:
                     clusters[i] = k
-        return clusters, objective_values
+        return clusters
 
 
 class MIQKMeans:
@@ -130,10 +130,11 @@ class MIQKMeans:
         self.n = data.shape[0]
         self.N = data.shape[1]
         self.bigM = 1e100
-        self.timeout = 60
+        self.timeout = 3000
         self.centroids = dict()
         self.indicators = dict()  # indicator variable of data point being associated with cluster
-        self.distances = dict()
+        self.vars = dict()
+        self.vars_norms = dict()
         self.model = self.create_model(name)  # gurobi model
 
     def create_model(self, name):
@@ -156,48 +157,56 @@ class MIQKMeans:
             model.addConstr(expr, GRB.GREATER_EQUAL, c, 's%d' % i)
 
         for i in range(self.n):
-            for j in range(self.N):
-                for k in range(self.k):
-                    self.distances[(i, j, k)] = model.addVar(vtype=GRB.CONTINUOUS)
+            for k in range(self.k):
+                self.vars[(i, k)] = model.addVars(self.N, lb=-GRB.INFINITY, ub=GRB.INFINITY, vtype=GRB.CONTINUOUS)
+                self.vars_norms[(i, k)] = model.addVar(lb=-GRB.INFINITY, ub=GRB.INFINITY, vtype=GRB.CONTINUOUS)
+                model.addGenConstrNorm(self.vars_norms[(i, k)], self.vars[(i, k)], 2.0, "normconstr")
 
         for k in range(self.k):
-            for j in range(self.N):
-                self.centroids[(k, j)] = model.addVar(vtype=GRB.CONTINUOUS)
+            self.centroids[k] = model.addVars(self.N, lb=-GRB.INFINITY, ub=GRB.INFINITY, vtype=GRB.CONTINUOUS)
 
         # constraints on distances
-        for i in range(self.n):
-            for j in range(self.N):
-                for k in range(self.k):
-                    expr = LinExpr(
-                        - self.bigM * (1 - self.indicators[(i, k)]) + (self.data.iloc[i, j] - self.centroids[(k, j)]))
-                    model.addConstr(self.distances[(i, j, k)], GRB.GREATER_EQUAL, expr)
-
-                    expr = LinExpr(
-                        self.bigM * (1 - self.indicators[(i, k)]) + (self.data.iloc[i, j] - self.centroids[(k, j)]))
-                    model.addConstr(self.distances[(i, j, k)], GRB.LESS_EQUAL, expr)
+        for k in range(self.k):
+            for i in range(self.n):
+                for j in range(self.N):
+                    model.addConstr(self.vars[(i, k)][j] >= - self.bigM * (1 - self.indicators[(i, k)]) + (
+                                self.data.iloc[i, j] - self.centroids[k][j]), '1sconstr')
+                    model.addConstr(self.vars[(i, k)][j] <= self.bigM * (1 - self.indicators[(i, k)]) + (
+                                self.data.iloc[i, j] - self.centroids[k][j]), '2sconstr')
 
         self.model = model
         return model
 
     def set_objective(self):
-        obj_coeff = [1] * (self.n * self.N * self.k)
-        obj_dist = []
+        obj_coeff = [1] * (self.n * self.k)
+        obj_vars = []
         for i in range(self.n):
             for k in range(self.k):
-                for j in range(self.N):
-                    obj_dist.append(self.distances[(i, j, k)])
-        self.model.setObjective(LinExpr(obj_coeff, obj_dist) ** 2, GRB.MINIMIZE)
+                obj_vars.append(self.vars_norms[(i, k)])
+        self.model.setObjective(QuadExpr(LinExpr(obj_coeff, obj_vars)), GRB.MINIMIZE)
         self.model.update()
 
     def solve(self):
         self.set_objective()
         self.model.Params.TimeLimit = self.timeout
+        self.model.Params.NumericFocus = 3
+        #self.model.Params.ScaleFlag = 3
+        self.model.Params.Presolve = 0
+        self.model.Params.NonConvex = 2
         self.model.optimize()
 
-        clusters = [-1 for i in range(self.n)]
         if self.model.Status == GRB.OPTIMAL:
+            clusters = [-1 for i in range(self.n)]
             for i in range(self.n):
                 for k in range(self.k):
                     if self.indicators[(i, k)].x > 0.5:
                         clusters[i] = k
-        return clusters
+
+        for i in range(self.n):
+            for j in range(self.N):
+                for k in range(self.k):
+                    print(self.vars[(i, k)][j].x)
+                    # print(self.centroids[k][j].x)
+                    # print(self.indicators[(i, k)].x)
+
+        return clusters, self.centroids
