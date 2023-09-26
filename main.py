@@ -2,41 +2,45 @@
 @authors
 Lorenzo Baiardi & Thomas Del Moro
 '''
-import numpy as np
 import pandas as pd
-import random
 from matplotlib import pyplot as plt
-from model import KMeans, MIQKMeans, header_result
+
+from kmeans import KMeans, header_kmeans_result
+from miqkmeans import MIQKMeans, header_miqkmeans_result
+
+
+def plot_dataset(data):
+    print(data.shape[0], data.shape[1])
+    print(data)
+    x1 = data.iloc[:, 0:1].values
+    x2 = data.iloc[:, 1:].values
+    plt.scatter(x1, x2)
+    plt.show()
+
+
+def kmeans(data, k):
+    header_kmeans_result()
+    m = KMeans("constrained_kmeans", data, k)
+    clusters = m.solve()
+    data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')
+    plt.show()
+
+
+def miq_kmeans(data, k):
+    header_miqkmeans_result()
+    m = MIQKMeans("constrained_kmeans", data, k)
+    clusters, centroids = m.solve()
+    data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')
+    plt.show()
 
 
 def main():
     data = pd.read_csv("./xclara.csv")
-    print(data.shape[0], data.shape[1])
-    print(data)
     data = data.dropna(how='any')
-    proc_data = data.iloc[:, :]
-    # v1 = data.iloc[:200, 0:1].values
-    # v2 = data.iloc[:200, 1:].values
-    # plt.scatter(v1, v2)
-    # plt.show()
-
-    K = 3
-    '''
-    m = KMeans("constrained_kmeans", proc_data, K)
-    clusters = m.solve()
-
-    proc_data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')
-    plt.show()
-    '''
-
-    header_result()
-    m = MIQKMeans("constrained_kmeans", proc_data, K)
-    clusters, centroids = m.solve()
-    print(centroids)
-    print(clusters)
-
-    proc_data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')
-    plt.show()
+    plot_dataset(data)
+    k = 3
+    kmeans(data, k)
+    miq_kmeans(data, k)
 
 
 if __name__ == '__main__':
