@@ -130,8 +130,8 @@ class MIQKMeans:
         self.k = k  # classes
         self.n = data.shape[0]  # number of elements
         self.N = data.shape[1]  # number of features
-        self.bigM = 200
-        self.timeout = 200
+        self.bigM = 400
+        self.timeout = 300
         self.centroids = dict()  # centroids of clusters
         self.indicators = dict()  # indicator variable of data point being associated with cluster
         self.vars = dict()  # residual variables per component
@@ -192,9 +192,6 @@ class MIQKMeans:
         self.model.update()
         self.set_objective()
         self.model.Params.TimeLimit = self.timeout
-        # self.model.Params.NumericFocus = 3
-        # self.model.Params.Presolve = 0
-        # self.model.Params.NonConvex = 2
         self.model.optimize(data_cb)
 
         clusters = [-1 for i in range(self.n)]
