@@ -154,13 +154,14 @@ class MIQKMeans:
         # constraint minimum of clusters
         for k in range(self.k):
             expr = LinExpr([1] * self.n, [self.indicators[(i, k)] for i in range(self.n)])
-            model.addConstr(expr, GRB.GREATER_EQUAL, c, 's%d' % i)
+            model.addConstr(expr, GRB.GREATER_EQUAL, c, 's%d' % k)
 
         for i in range(self.n):
             for k in range(self.k):
                 self.vars[(i, k)] = model.addVars(self.N, lb=-GRB.INFINITY, ub=GRB.INFINITY, vtype=GRB.CONTINUOUS)
                 self.vars_norms[(i, k)] = model.addVar(lb=-GRB.INFINITY, ub=GRB.INFINITY, vtype=GRB.CONTINUOUS)
-                model.addGenConstrNorm(self.vars_norms[(i, k)], self.vars[(i, k)], 2.0, "normconstr")
+                model.addGenConstrNorm(self.vars_norms[(i, k)], self.vars[(i, k)], 2.0, "normconstr%d%d" % (i, k))
+                #model.addConstr(self.vars_norms[(i, k)] == norm(self.vars[(i, k)]), "normconstr2")
 
         for k in range(self.k):
             self.centroids[k] = model.addVars(self.N, lb=-GRB.INFINITY, ub=GRB.INFINITY, vtype=GRB.CONTINUOUS)
@@ -170,10 +171,10 @@ class MIQKMeans:
             for i in range(self.n):
                 for j in range(self.N):
                     model.addConstr(self.vars[(i, k)][j] >= - self.bigM * (1 - self.indicators[(i, k)]) + (
-                                self.data.iloc[i, j] - self.centroids[k][j]), '1sconstr')
+                                self.data.iloc[i, j] - self.centroids[k][j]), "sl%d%d%d" % (j, i, k))
                     model.addConstr(self.vars[(i, k)][j] <= self.bigM * (1 - self.indicators[(i, k)]) + (
-                                self.data.iloc[i, j] - self.centroids[k][j]), '2sconstr')
-
+                                self.data.iloc[i, j] - self.centroids[k][j]), "su%d%d%d" % (j, i, k))
+                #model.addConstr(self.vars_norms[(i, k)] >= -self.bigM * (1- self.indicators[(i, k)]) + (self.data.iloc[i, :] - self.centroids[k]))
         self.model = model
         return model
 
@@ -202,11 +203,12 @@ class MIQKMeans:
                     if self.indicators[(i, k)].x > 0.5:
                         clusters[i] = k
 
+        '''
         for i in range(self.n):
             for j in range(self.N):
                 for k in range(self.k):
                     print(self.vars[(i, k)][j].x)
                     # print(self.centroids[k][j].x)
                     # print(self.indicators[(i, k)].x)
-
+        '''
         return clusters, self.centroids
