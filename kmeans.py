@@ -6,6 +6,7 @@ Lorenzo Baiardi & Thomas Del Moro
 import numpy as np
 import random
 from gurobipy import *
+from timeit import default_timer as timer
 
 
 class KMeans:
@@ -71,7 +72,7 @@ class KMeans:
         # assignment step
         self.set_objective()
         self.model.Params.TimeLimit = self.timeout
-        self.model.optimize(data_cb)
+        self.model.optimize()
 
         # update centroids
         indicator = np.zeros((self.n, self.k))
@@ -89,17 +90,18 @@ class KMeans:
                 sd += indicator[i][k]
             centroids[k] = sdx / sd
         self.centroids = centroids
-        return centroids, self.model.getObjective()
+        return centroids, self.model.ObjVal
 
     def solve(self):
         epsilon = 1e-4 * self.data.shape[1] * self.k
         shift = math.inf  # centroid shift
-        objective_values = []
+        start_time = timer()
         while shift > epsilon:
             shift = 0
             old_centroids = self.centroids
             new_centroids, new_objective = self.update()
-            objective_values.append(new_objective)
+            t = timer() - start_time
+            export_kmeans_data(t, new_objective)
             if self.model.Status == GRB.OPTIMAL:
                 # calculated centroid shift
                 for i in range(self.k):
@@ -113,7 +115,7 @@ class KMeans:
             for k in range(self.k):
                 if self.indicators[(i, k)].x > 0.5:
                     clusters[i] = k
-        return clusters, objective_values
+        return clusters
 
 
 def l2_dist(x, y):
@@ -122,12 +124,12 @@ def l2_dist(x, y):
 
 def header_kmeans_result():
     with open("results_KMEANS.csv", 'w') as f:
-        f.write("TIME;OBJ;BOUND\n")
+        f.write("TIME;OBJ\n")
 
 
-def export_kmeans_data(time, cur_obj, cur_bd):
+def export_kmeans_data(time, cur_obj):
     with open("results_KMEANS.csv", 'a') as f:
-        f.write(f"{time};{cur_obj};{cur_bd}\n")
+        f.write(f"{time};{cur_obj}\n")
 
 
 def data_cb(model, where):
@@ -135,6 +137,6 @@ def data_cb(model, where):
         time = model.cbGet(GRB.Callback.RUNTIME)
         cur_obj = model.cbGet(GRB.Callback.MIP_OBJBST)
         cur_bd = model.cbGet(GRB.Callback.MIP_OBJBND)
-        export_kmeans_data(time, cur_obj, cur_bd)
+        export_kmeans_data(time, cur_obj)
 
 
