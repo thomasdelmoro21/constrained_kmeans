@@ -21,7 +21,7 @@ def plot_dataset(data):
 def kmeans(data, k):
     header_kmeans_result()
     m = KMeans("constrained_kmeans", data, k)
-    clusters = m.solve()
+    clusters, objectives = m.solve()
     data.plot.scatter(0, 1, c=clusters, colormap='gist_rainbow')
     plt.show()
 
