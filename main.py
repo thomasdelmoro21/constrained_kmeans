@@ -2,7 +2,9 @@
 @authors
 Lorenzo Baiardi & Thomas Del Moro
 '''
+import numpy as np
 import pandas as pd
+from sklearn import datasets
 from matplotlib import pyplot as plt
 from plotter import plot_all
 from kmeans import KMeans, header_kmeans_result
@@ -35,7 +37,7 @@ def miq_kmeans(data, k):
     return objective
 
 
-DATASET = 1
+DATASET = 2
 
 
 def main():
@@ -46,7 +48,27 @@ def main():
         data = pd.read_csv("./xclara.csv")
         plot_dataset(data)
         k = 3
-        
+
+    if DATASET == 2:
+        data = pd.read_csv("./heart_disease_patients.csv")
+        k = 2
+
+    if(DATASET == 10):
+        data = pd.read_csv("./kiva_country_profile_variables.csv")
+        print(data)
+        data = data.iloc[:, 2:]
+        replacement = {'~0': 0,
+                       '-~0.0': 0,
+                       '~0.0': 0,
+                       '...': -99,
+                       '': -99}
+        cleaned_data = data.replace(replacement)
+        k = 10
+
+    if (DATASET == 11):
+        data = pd.read_csv("./country_profile_variables.csv")
+        k = 3
+    
     kmeans(data, k)
     miq_kmeans(data, k)
 
