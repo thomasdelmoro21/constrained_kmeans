@@ -1,4 +1,10 @@
+'''
+@authors
+Lorenzo Baiardi & Thomas Del Moro
+'''
+
 from gurobipy import Model, LinExpr, GRB, QuadExpr
+from timeit import default_timer as timer
 
 
 class MIQKMeans:
@@ -8,7 +14,7 @@ class MIQKMeans:
         self.n = data.shape[0]  # number of elements
         self.N = data.shape[1]  # number of features
         self.bigM = 150
-        self.timeout = 300
+        self.timeout = 30
         self.centroids = dict()  # centroids of clusters
         self.indicators = dict()  # indicator variable of data point being associated with cluster
         self.vars = dict()  # residual variables per component
@@ -66,18 +72,21 @@ class MIQKMeans:
         self.model.update()
 
     def solve(self):
+        start_time = timer()
+        runtime = None
         self.model.update()
         self.set_objective()
         self.model.Params.TimeLimit = self.timeout
         self.model.optimize(data_cb)
 
+        runtime = timer() - start_time
         clusters = [-1 for i in range(self.n)]
         for i in range(self.n):
             for k in range(self.k):
                 if self.indicators[(i, k)].x > 0.5:
                     clusters[i] = k
 
-        return clusters, self.model.getObjective()
+        return clusters, self.model.objVal, runtime
 
 
 def header_miqkmeans_result():

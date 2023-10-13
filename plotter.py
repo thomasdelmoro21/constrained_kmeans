@@ -15,25 +15,23 @@ def plot_all():
     x_kmeans = np.arange(0, kmeans_data.shape[0])
     x_miq = np.arange(0, miq_data.shape[0])
 
+    kmeans_loss = kmeans_data.iloc[:, 1].values.tolist()
+    miq_loss = miq_data.iloc[:, 1].values.tolist()
+    kmeans_times = kmeans_data.iloc[:, 0].values.tolist()
+    miq_times = miq_data.iloc[:, 0].values.tolist()
+
     plt.figure(1)
-    plt.plot(kmeans_data.iloc[:, 0], kmeans_data.iloc[:, 1])
-    plt.plot(miq_data.iloc[10:, 0], miq_data.iloc[10:, 1])
+    plt.plot(kmeans_times, kmeans_loss)
+    plt.plot(miq_times[9:], miq_loss[9:])
     plt.xlabel("Runtime(s)")
     plt.ylabel("Loss value")
     plt.legend(["Kmeans", "MIQKmeans"])
     plt.title("Grafico 1")
 
-    '''
-    x = np.arange(2)
-    plt.bar(x_kmeans, times, width=0.25, color='r', label='edit distance')
-    plt.bar(x + 0.30, twoGramTimes, width=0.25, color='b', label='2-gram')
-    plt.bar(x + 0.60, threeGramTimes, width=0.25, color='g', label='3-gram')
-    plt.xlabel('Lunghezza parole')
-    plt.ylabel('Tempo (secondi)')
-    plt.title('Grafico 1')
-    plt.xticks(x + 0.30, ('4 lettere', '5 lettere', '7 lettere', '10 lettere', '11 lettere', '15 lettere'))
-    plt.legend()
-    plt.show()
-    '''
-
+    method = ['kmeans', 'MIQkmeans']
+    final_loss = [kmeans_loss[-1], miq_loss[-1]]
+    plt.figure(2)
+    #plt.bar(method, final_loss, width=0.3, color=['#ff7f0e', '#2ca02c'])
+    plt.bar('kmeans', kmeans_loss[-1], width=0.3, color=['#ff7f0e'])
+    plt.bar('MIQkmeans', miq_loss[-1], width=0.3, color=['#2ca02c'])
     plt.show()

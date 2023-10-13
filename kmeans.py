@@ -95,27 +95,29 @@ class KMeans:
     def solve(self):
         epsilon = 1e-4 * self.data.shape[1] * self.k
         shift = math.inf  # centroid shift
+        cur_objective = None
         start_time = timer()
+        runtime = None
         while shift > epsilon:
             shift = 0
             old_centroids = self.centroids
-            new_centroids, new_objective = self.update()
-            t = timer() - start_time
-            export_kmeans_data(t, new_objective)
+            cur_centroids, cur_objective = self.update()
+            runtime = timer() - start_time
+            export_kmeans_data(runtime, cur_objective)
             if self.model.Status == GRB.OPTIMAL:
                 # calculated centroid shift
                 for i in range(self.k):
                     print('old ', old_centroids[i])
-                    print('new ', new_centroids[i])
-                    shift += l2_dist(old_centroids[i], new_centroids[i])
+                    print('new ', cur_centroids[i])
+                    shift += l2_dist(old_centroids[i], cur_centroids[i])
                     print('shift ', shift)
 
-        clusters = [-1 for i in range(self.n)]
+        clusters = [-1 for _ in range(self.n)]
         for i in range(self.n):
             for k in range(self.k):
                 if self.indicators[(i, k)].x > 0.5:
                     clusters[i] = k
-        return clusters
+        return clusters, cur_objective, runtime
 
 
 def l2_dist(x, y):
