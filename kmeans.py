@@ -1,7 +1,7 @@
-'''
+"""
 @authors
 Lorenzo Baiardi & Thomas Del Moro
-'''
+"""
 
 import numpy as np
 import random
