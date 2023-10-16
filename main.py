@@ -112,8 +112,9 @@ def get_dataset(dataset_id):
 
 def test_synthetic_datasets():
     test_sizes = np.linspace(1000, 100000, 2, dtype=int)
-    test_sizes = [1000]
+    test_sizes = [10000]
     test_features = np.linspace(2, 20, 4, dtype=int)
+    test_features = [3]
     test_centers = np.linspace(2, 20, 5, dtype=int)
 
     for size in test_sizes:
@@ -134,6 +135,12 @@ def test_synthetic_datasets():
             miq_clusters, miq_loss, miq_runtime = miq_kmeans(data, 3)
             miq_losses.append(miq_loss)
             miq_runtimes.append(miq_runtime)
+
+            print(f"\n**TEST: {n_features} features")
+            print(f"KMEANS LOSS: {kmeans_loss}")
+            print(f"KMEANS RUNTIME: {kmeans_runtime}")
+            print(f"MIQKMEANS LOSS: {miq_loss}")
+            print(f"MIQKMEANS RUNTIME: {miq_runtime}")
 
             plt.figure(1)
             pca = PCA()
@@ -221,7 +228,7 @@ def main():
     data = None
     k = None
 
-    data, k = get_dataset(DATASET)
+    #data, k = get_dataset(DATASET)
     if data is None:
         raise Exception("NO DATA AVAILABLE")
     if k is None:
