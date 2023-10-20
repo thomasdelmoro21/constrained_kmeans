@@ -93,7 +93,8 @@ class KMeans:
         return centroids, self.model.ObjVal
 
     def solve(self):
-        epsilon = 1e-5 * self.data.shape[0] * self.data.shape[1] * self.k
+        #epsilon = 1e-5 * self.data.shape[0] * self.data.shape[1] * self.k
+        epsilon = 1e-4
         shift = math.inf  # centroid shift
         cur_objective = None
         start_time = timer()
@@ -125,12 +126,12 @@ def l2_dist(x, y):
 
 
 def header_kmeans_result():
-    with open("results_KMEANS.csv", 'w') as f:
+    with open("results/results_KMEANS.csv", 'w') as f:
         f.write("TIME;OBJ\n")
 
 
 def export_kmeans_data(time, cur_obj):
-    with open("results_KMEANS.csv", 'a') as f:
+    with open("results/results_KMEANS.csv", 'a') as f:
         f.write(f"{time};{cur_obj}\n")
 
 

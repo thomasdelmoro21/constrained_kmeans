@@ -11,7 +11,7 @@ from plotter import plot_all
 from kmeans import KMeans, header_kmeans_result
 from miqkmeans import MIQKMeans, header_miqkmeans_result
 
-DATASET = 3
+DATASET = 0
 
 
 def plot_dataset(data):
@@ -39,6 +39,16 @@ def get_dataset(dataset_id):
     all_dataset = []
     data = None
     k = None
+
+    if dataset_id == 0:
+        data, _ = make_blobs(n_samples=1000, n_features=2, centers=3, cluster_std=10, random_state=110)
+        n_features = data.shape[1]
+        col_names = []
+        for i in range(n_features):
+            col_names.append('V{}'.format(i + 1))
+        data = pd.DataFrame(data, columns=col_names)
+        k = 3
+        print(data.head())
 
     if dataset_id == 1:
         data, _ = make_blobs(n_samples=10000, n_features=4, centers=3, cluster_std=10, random_state=110)
@@ -112,9 +122,9 @@ def get_dataset(dataset_id):
 
 def test_synthetic_datasets():
     test_sizes = np.linspace(1000, 100000, 2, dtype=int)
-    test_sizes = [10000]
-    test_features = np.linspace(2, 20, 4, dtype=int)
-    test_features = [3]
+    test_sizes = [1000]
+    test_features = np.linspace(2, 20, 8, dtype=int)
+    test_features = [2]
     test_centers = np.linspace(2, 20, 5, dtype=int)
 
     for size in test_sizes:
@@ -123,7 +133,8 @@ def test_synthetic_datasets():
         miq_losses = []
         miq_runtimes = []
         for n_features in test_features:
-            data, _ = make_blobs(n_samples=size, n_features=n_features, centers=3, cluster_std=10, random_state=777)
+            n_centers = 3
+            data, _ = make_blobs(n_samples=size, n_features=n_features, centers=n_centers, cluster_std=10, random_state=777)
             col_names = []
             for i in range(n_features):
                 col_names.append('V{}'.format(i + 1))
@@ -155,12 +166,14 @@ def test_synthetic_datasets():
             plt.show()
 
         x = test_features
+        plt.figure()
         plt.plot(x, kmeans_losses)
         plt.plot(x, miq_losses)
         plt.xlabel("Number of features")
         plt.ylabel("Loss value")
         plt.legend(["Kmeans", "MIQKmeans"])
         plt.title("Loss Values")
+        plt.savefig("results/plot_loss_size{}".format(size))
 
         plt.figure()
         plt.plot(x, kmeans_runtimes)
@@ -169,6 +182,7 @@ def test_synthetic_datasets():
         plt.ylabel("Runtime(s)")
         plt.legend(["Kmeans", "MIQKmeans"])
         plt.title("Runtimes")
+        plt.savefig("results/plot_runtime_size{}".format(size))
 
         plt.show()
 
@@ -228,13 +242,13 @@ def main():
     data = None
     k = None
 
-    #data, k = get_dataset(DATASET)
+
+    data, k = get_dataset(DATASET)
     if data is None:
         raise Exception("NO DATA AVAILABLE")
     if k is None:
         raise Exception("NUMBER OF CLUSTERS NOT AVAILABLE")
 
-    """ 
     kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(data, k)
     miq_clusters, miq_loss, miq_runtime = miq_kmeans(data, k)
 
@@ -247,9 +261,9 @@ def main():
     plt.show()
 
     plot_all()
-    """
 
-    test_synthetic_datasets()
+
+    #test_synthetic_datasets()
 
 
 if __name__ == '__main__':

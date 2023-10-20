@@ -14,7 +14,7 @@ class MIQKMeans:
         self.n = data.shape[0]  # number of elements
         self.N = data.shape[1]  # number of features
         self.bigM = 150
-        self.timeout = 300
+        self.timeout = 1000
         self.centroids = dict()  # centroids of clusters
         self.indicators = dict()  # indicator variable of data point being associated with cluster
         self.vars = dict()  # residual variables per component
@@ -90,12 +90,12 @@ class MIQKMeans:
 
 
 def header_miqkmeans_result():
-    with open("results_MIQKMEANS.csv", 'w') as f:
+    with open("results/results_MIQKMEANS.csv", 'w') as f:
         f.write("TIME;OBJ;BOUND\n")
 
 
 def export_miqkmeans_data(time, cur_obj, cur_bd):
-    with open("results_MIQKMEANS.csv", 'a') as f:
+    with open("results/results_MIQKMEANS.csv", 'a') as f:
         f.write(f"{time};{cur_obj};{cur_bd}\n")
 
 
