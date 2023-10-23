@@ -112,30 +112,30 @@ def get_dataset(dataset_id):
 
 def test_synthetic_datasets():
     test_sizes = np.linspace(1000, 100000, 2, dtype=int)
-    test_sizes = [100]
+    test_sizes = [1000]
     test_features = np.linspace(2, 15, 6, dtype=int)
-    test_centers = np.linspace(2, 20, 5, dtype=int)
+    test_centers = np.linspace(2, 20, 6, dtype=int)
 
     for size in test_sizes:
         kmeans_losses = []
         kmeans_runtimes = []
         miq_losses = []
         miq_runtimes = []
-        for n_features in test_features:
-            data, _ = make_blobs(n_samples=size, n_features=n_features, centers=3, cluster_std=10, random_state=777)
+        for n_centers in test_centers:
+            data, _ = make_blobs(n_samples=size, n_features=5, centers=n_centers, cluster_std=5, random_state=110)
             col_names = []
-            for i in range(n_features):
+            for i in range(5):
                 col_names.append('V{}'.format(i + 1))
             data = pd.DataFrame(data, columns=col_names)
     
-            kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(data, 3)
+            kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(data, n_centers)
             kmeans_losses.append(kmeans_loss)
             kmeans_runtimes.append(kmeans_runtime)
-            miq_clusters, miq_loss, miq_runtime = miq_kmeans(data, 3)
+            miq_clusters, miq_loss, miq_runtime = miq_kmeans(data, n_centers)
             miq_losses.append(miq_loss)
             miq_runtimes.append(miq_runtime)
 
-            print(f"\n**TEST: {n_features} features")
+            print(f"\n**TEST: {n_centers} centers")
             print(f"KMEANS LOSS: {kmeans_loss}")
             print(f"KMEANS RUNTIME: {kmeans_runtime}")
             print(f"MIQKMEANS LOSS: {miq_loss}")
@@ -153,10 +153,10 @@ def test_synthetic_datasets():
             plt.ylabel("PC2")
             plt.show()
 
-        x = test_features
+        x = test_centers
         plt.plot(x, kmeans_losses)
         plt.plot(x, miq_losses)
-        plt.xlabel("Number of features")
+        plt.xlabel("Number of centers")
         plt.ylabel("Loss value")
         plt.legend(["Kmeans", "MIQKmeans"])
         plt.title("Loss Values")
@@ -164,7 +164,7 @@ def test_synthetic_datasets():
         plt.figure()
         plt.plot(x, kmeans_runtimes)
         plt.plot(x, miq_runtimes)
-        plt.xlabel("Number of features")
+        plt.xlabel("Number of centers")
         plt.ylabel("Runtime(s)")
         plt.legend(["Kmeans", "MIQKmeans"])
         plt.title("Runtimes")
