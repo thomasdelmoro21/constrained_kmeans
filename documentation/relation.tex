@@ -1,15 +1,101 @@
 %! Author = loreb
 %! Date = 31/10/2023
 
-% Preamble
-\documentclass[11pt]{article}
+\documentclass{article}
 
-% Packages
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
 \usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{mathrsfs}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
-% Document
+\title{K-means and Mixed-Integer Quadratic Programming}
+\author{Lorenzo Baiardi \& Thomas Del Moro}
+
 \begin{document}
+    \maketitle
+    \begin{abstract}
+        K-means è uno degli algoritmi più conosciuti e utilizzati per molti problemi di clustering. In questo lavoro analizziamo un approccio innovativo del k-means, basato sulla tecnica di Mixed-Integer Quadratic Programming (MIQP). Attraverso l'utilizzo di dataset sintetici e real-world valutiamo le performance di questa tecnica, in modo da comprenderne le
+        eventuali potenzialità e criticità in ambito empirico.
+    \end{abstract}
 
 
+    \section{Introduzione}
 
+    Questo lavoro consiste nell'analisi sperimentale dell'approccio MIQP relativamente all'algoritmo K-means. In particolare i nostri studi si concentrano su un confronto tra tale versione con quella originale, sulla base di vari aspetti quali la l'andamento della funzione obiettivo e il tempo di esecuzione al variare dei parametri del dataset utilizzato.
+
+    \subsection{K-Means}
+
+    Consideriamo un dataset numerico $D=\{x_i \in \mathbb{R}^{N}, i=1,\dots,n$. Applicare l'algoritmo k-means significa partizionare gli esempi $x_i$ in $K$ cluster, con $K$ fissato, in modo da minimizzare la somma delle distanze euclidee al quadrato tra ogni elemento del dataset e il centroide del cluster al quale è assegnato.
+    Formalmente il problema è dato da
+    \begin{equation}
+        \min_{\begin{subarray}{c}
+                  \delta \in \{0, 1\}^{n \times K}\\
+                  z \in \mathbb{R}^{K \times N}
+        \end{subarray}}
+        \frac{1}{2} \sum_{i=1}^{n} \sum_{k=1}^{K} \delta_{ik} \|x_i-z_k\|^2
+        \label{eq:kmeans}
+    \end{equation}
+    dove $\delta_{ik}$ sono le variabili indicatrici dell'associazione tra il punto $x_i$ e il cluster $k$, mentre le $z_k$ indentificano il centroide del cluster $k$.\\
+    A questo problema sono poi stati aggiunti dei vincoli di appartenenza, per cui ogni punto può essere associato a un solo cluster e ad ogni cluster devono essere associati almeno $C$ elementi. Dunque il problema diventa
+    \begin{equation}
+        \begin{aligned}
+            \min_{\substack{
+                \delta \in \{0, 1\}^{n \times K}\\
+                z \in \mathbb{R}^{K \times N}}} &
+            \frac{1}{2} \sum_{i=1}^{n} \sum_{k=1}^{K} \delta_{ik} \|x_i-z_k\|^2 \\
+            \text{t.c.} \quad &
+            \begin{aligned}
+                & \sum_{k=1}^{K} \delta_{ik} = 1 \quad \text{for $i=1,\dots,n$}\\
+                & \sum_{i=1}^{n} \delta_{ik} \geq C_k \quad \text{for $k=1,\dots,K$}
+            \end{aligned}
+        \end{aligned}
+        \label{eq:constrained_kmeans}
+    \end{equation}
+
+    In questa formulazione l'algoritmo viene inizializzato con dei centroidi casuali, dopodiché ripete iterativamente i seguenti due step:
+    \begin{itemize}
+        \item \textbf{Assegnazione}: ogni elemento $x_i$ viene assegnato al cluster $k$ il cui centroide è più vicino a $x_i$ tra tutti i centroidi
+        \[\delta^{t+1} \in \arg \min_{\delta \in \{0,1\}^n\times \K} \frac{1}{2} \sum_{i=1}^{n} \sum_{k=1}^{K} \delta_{ik} \|x_i-z_k^{t}\|^2\]
+        \item \textbf{Aggiornamento}: tutti i centroidi vengono aggiornati come la media dei punti assegnati al loro cluster
+        \[z^{t+1} \in \arg \min_{z} \frac{1}{2} \sum_{i=1}^{n} \sum_{k=1}^{K} \delta_{ik}^{t+1} \|x_i-z_k\|^2\]
+        in particolare si può verificare che vale la soluzione calcolabile in forma chiusa
+        \[z_k^{t+1} = \frac{\sum_{i=1}^{n} \delta_{ik}^{t+1} x_i}{\sum_{i=1}^{n} \delta_{ik}^{t+1}}\]
+    \end{itemize}
+
+    \subsection{MIQP K-Means}
+    Il MIQP (acronimo di Mixed-Integer Quadratic Programming) è una combinazione di Quadratic Programming e Mixed-Integer Linear Programming, più in particolare è una classe di problemi di ottimizzazione che consiste nel minimizzare una funzione quadratica di variabili continue soggette a vincoli lineari, ma alcune delle variabili sono anche soggette a vincoli di interezza.\\
+    Molti problemi di ottimizzazione possono essere riformulati come MIQP e risolti attraverso l'utilizzo di solver (es. Gurobi) che oggi sono capaci di gestire un gran numero di variabili intere e trovare l'ottimo globale del problema.\\
+    Nel nostro caso, quindi, il problema di clustering può essere riformulato in modo da garantire, tramite l'utilizzo di un solver, il raggiungimento dell'ottimo globale; in contrasto con la versione classica di K-Means che è soggetta allo stazionamento in minimi locali.\\
+    Il problema~\ref{eq:constrained_kmeans} può dunque essere riformulato come
+    \begin{equation}
+        \begin{aligned}
+            \min_{\substack{
+                \delta \in \{0, 1\}^{n \times K}\\
+                z \in \mathbb{R}^{K \times N} \\
+                s \in \mathbb{R}^{N \times n \times K}}} &
+            \frac{1}{2} \sum_{i=1}^{n} \sum_{k=1}^{K} \|s_{ik}\|^2 \\
+            \text{t.c.} \quad &
+            \begin{aligned}
+                & \sum_{k=1}^{K} \delta_{ik} = 1 \quad \text{for $i=1,\dots,n$} \\
+                & \sum_{i=1}^{n} \delta_{ik} \geq C_k \quad \text{for $k=1,\dots,K$} \\
+                & -M(1-\delta_{ik}) + (x_{ij}-z_{kj}) \leq s_{jik} \leq M(1-\delta_{ik}) + (x_{ij}-z_{kj}) \quad \text{for all $i, j, k$}
+            \end{aligned}
+        \end{aligned}
+        \label{eq:MIQkmeans}
+    \end{equation}
+    dove $M$ è un valore sufficientemente grande da garantire che:
+    \begin{itemize}
+        \item se $\delta_{ik} = 0$ allora $s_{jik}$ sia uguale alla distanza tra $x_{ij}$ e $z_{kj}$.
+        \item se $\delta_{ik} = 1$ allora $s_{jik}$ sia libero e quindi settato a 0.
+    \end{itemize}
 \end{document}
