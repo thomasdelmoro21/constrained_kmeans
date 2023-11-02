@@ -17,6 +17,7 @@
 \usepackage{graphicx}
 \usepackage{mathrsfs}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{subcaption}
 
 \title{K-means and Mixed-Integer Quadratic Programming}
 \author{Lorenzo Baiardi \& Thomas Del Moro}
@@ -98,4 +99,30 @@
         \item se $\delta_{ik} = 0$ allora $s_{jik}$ sia uguale alla distanza tra $x_{ij}$ e $z_{kj}$.
         \item se $\delta_{ik} = 1$ allora $s_{jik}$ sia libero e quindi settato a 0.
     \end{itemize}
+
+    \section{Implementazione}
+    Per l'algoritmo K-Means, una volta inizializzati i centroidi, viene eseguito lo step di assegnazione degli indicatori, utilizzando l'ottimizzazione del solver Gurobi. Per l'aggiornamento dei centroidi invece si è utilizzato il calcolo in forma chiusa mostrato sopra.\\
+    La versione MIPQ invece si basa interamente sull'ottimizzazione del solver Gurobi. In questo caso era necessario impostare un valore ragionevole di time limit, per evitare esecuzioni eccessivamente lunghe. Notiamo che la costante $M$ utilizzata nei vincoli deve essere impostata al valore più piccolo possibile che non introduca vincoli di box, in modo da migliorare l'efficienza dell'algoritmo.\\
+
+    \section{Esperimenti e Risultati}
+    Entrambi gli algoritmi sono stati testati su dataset sintetici e real-world osservando principalmente il valore della funzione obiettivo e il tempo di esecuzione. In particolare sono stati confrontati tali risultati al variare dei fattori $n$, $N$, e $K$, in modo da comprendere le eventuali criticità delle due formulazioni del problema.\\
+    Prima di tutto sono stati eseguiti alcuni test per analizzare il comportamento dei due algoritmi. Il fattore che appare evidente fin da subito è la differenza nel tempo di esecuzione. La versione MIPQ garantisce di raggiungere l'ottimo globale del problema, ma a costo di tempi di esecuzione molto più lunghi rispetto al suo competitor. Utilizzando dataset relativamente piccoli è stato possibile osservare la discesa delle due funzioni obiettivo nel tempo. I risultati, mostrati in figura \ref{fig:1} mostrano infatti che la versione sub-ottima del K-Means raggiunge un buon valore di perdita già in pochissimi secondi, mentre la formulazione MIQP dimostra di poter raggiungere valori di loss minori anche se con tempi più lunghi.\\
+    \begin{figure}[h]
+     \centering
+     \begin{subfigure}[b]{0.49\linewidth}
+         \centering
+         \includegraphics[width=\linewidth]{../results/plots/plot_rl_s100_f2}
+         \caption{Dataset of 100 examples with 2 features}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.49\linewidth}
+         \centering
+         \includegraphics[width=\linewidth]{../results/plots/plot_rl_s100_f5}
+         \caption{Dataset of 100 examples with 5 features}
+     \end{subfigure}
+    \hfill
+    \caption{Objective function value over time with small datasets}
+    \label{fig:1}
+    \end{figure}
+
 \end{document}
