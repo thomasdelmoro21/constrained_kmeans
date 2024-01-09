@@ -94,7 +94,7 @@ class KMeans:
 
     def solve(self):
         #epsilon = 1e-5 * self.data.shape[0] * self.data.shape[1] * self.k
-        epsilon = 0.1
+        epsilon = 0.001
         shift = math.inf  # centroid shift
         cur_objective = None
         start_time = timer()

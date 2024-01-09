@@ -4,22 +4,23 @@ Lorenzo Baiardi & Thomas Del Moro
 """
 import numpy as np
 import pandas as pd
+import sklearn.datasets
 from sklearn.datasets import *
 from sklearn.decomposition import PCA
 from matplotlib import pyplot as plt
-from plotter import plot_all
 from kmeans import KMeans, header_kmeans_result
 from miqkmeans import MIQKMeans, header_miqkmeans_result
 
-DATASET = 3
+DATASET = 11
 
 
 def plot_dataset(data):
-    print(data.shape[0], data.shape[1])
-    print(data)
-    x1 = data.iloc[:, 0:1].values
-    x2 = data.iloc[:, 1:].values
-    plt.scatter(x1, x2)
+    plt.figure()
+    pca = PCA()
+    data_pc = pca.fit_transform(data)
+    plt.scatter(data_pc[:, 0], data_pc[:, 1])
+    plt.xlabel("PC1")
+    plt.ylabel("PC2")
     plt.show()
 
 
@@ -33,6 +34,11 @@ def miq_kmeans(data, k):
     header_miqkmeans_result()
     m = MIQKMeans("constrained_kmeans", data, k)
     return m.solve()
+
+
+def copy_csv(filename, copy_filename):
+    df = pd.read_csv(filename, sep=";")
+    df.to_csv(copy_filename, sep=";")
 
 
 def get_dataset(dataset_id):
@@ -80,6 +86,7 @@ def get_dataset(dataset_id):
     if dataset_id == 11:
         data = pd.read_csv("./heart_disease_patients.csv")
         k = 2
+        data = data.drop('id', axis=1)
         plot_dataset(data)
         all_dataset.append({"data": data, "k": k})
 
@@ -107,10 +114,20 @@ def get_dataset(dataset_id):
         plot_dataset(data)
         all_dataset.append({"data": data, "k": k})
 
+
+    # COVERAGE TYPE DATASET
+    if dataset_id == 14:
+        data = sklearn.datasets.fetch_covtype(as_frame=True).data
+        k = 7
+        print(data.head())
+        # normalized_data = (data - data.mean()) / data.std()
+
     return data, k
 
 
-def test_synthetic_datasets():
+def test_synthetic_data():
+    # test al variare dei dati di input: modificare valori in alto e scambiare ordine dei cicli per ottenere tutti i plot
+
     test_sizes = np.linspace(1000, 100000, 2, dtype=int)
     test_sizes = [20, 50, 100, 500, 1000]
     test_features = np.linspace(2, 15, 6, dtype=int)
@@ -172,86 +189,82 @@ def test_synthetic_datasets():
 
         plt.show()
 
-    '''
-    # test al variare dei dati di input: modificare valori in alto e scambiare ordine dei cicli per ottenere tutti i plot
-    for size in test_sizes:
-        for n_features in test_features:
-            kmeans_losses = []
-            kmeans_runtimes = []
-            miq_losses = []
-            miq_runtimes = []
-            for n_centers in test_centers:
-                data, _ = make_blobs(n_samples=size, n_features=n_features, centers=n_centers, cluster_std=10, random_state=110)
-                col_names = []
-                for i in range(n_features):
-                    col_names.append('V{}'.format(i + 1))
-                data = pd.DataFrame(data, columns=col_names)
+def test_real_data():
+    # Eseguito su dataset HEART DISEASE PATIENTS
 
-                kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(data, n_centers)
-                kmeans_losses.append(kmeans_loss)
-                kmeans_runtimes.append(kmeans_runtime)
-                miq_clusters, miq_loss, miq_runtime = miq_kmeans(data, n_centers)
-                miq_losses.append(miq_loss)
-                miq_runtimes.append(miq_runtime)
+    # TEST SIZE: 4 features, 3 clusters. Con 10 elementi si è raggiunto l'ottimo verificato
+    # TEST FEATURES: 20 elements, 3 clusters
+    # TEST CENTERS: 20 elements, 4 features
 
-                plt.figure()
-                plt.scatter(data.iloc[:, 0], data.iloc[:, 1], c=miq_clusters)
-                plt.show()
+    data, k = get_dataset(DATASET)
 
-            x = test_centers
-            #x = test_features
-            #x = test_sizes
-            plt.figure()
-            plt.plot(x, kmeans_losses)
-            plt.plot(x, miq_losses)
-            plt.xlabel("Number of clusters")
-            #plt.xlabel("Number of features")
-            #plt.xlabel("Number of elements")
-            plt.ylabel("Loss value")
-            plt.legend(["Kmeans", "MIQKmeans"])
-            plt.title("Loss Values")
+    test_sizes = [10, 20, 30, 40, 50, 60]
+    test_features = [2, 4, 6, 8, 10]
+    test_centers = [4]
 
-            plt.figure()
-            plt.plot(x, kmeans_runtimes)
-            plt.plot(x, miq_runtimes)
-            plt.xlabel("Number of clusters")
-            # plt.xlabel("Number of features")
-            # plt.xlabel("Number of elements")
-            plt.ylabel("Runtime(s)")
-            plt.legend(["Kmeans", "MIQKmeans"])
-            plt.title("Runtimes")
+    kmeans_losses = []
+    kmeans_runtimes = []
+    miq_losses = []
+    miq_runtimes = []
+    for n_centers in test_centers:
+        cur_data = data.sample(frac=1)
+        cur_data = cur_data.iloc[:30, :4]
+        k = n_centers
+        kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(cur_data, k)
+        miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k)
 
-            plt.show()
-    '''
+        print(f"\n**TEST: REAL DATA {k} centers")
+        print(f"KMEANS LOSS: {kmeans_loss}")
+        print(f"KMEANS RUNTIME: {kmeans_runtime}")
+        print(f"MIQKMEANS LOSS: {miq_loss}")
+        print(f"MIQKMEANS RUNTIME: {miq_runtime}")
+
+        kmeans_losses.append(kmeans_loss)
+        kmeans_runtimes.append(kmeans_runtime)
+        miq_losses.append(miq_loss)
+        miq_runtimes.append(miq_runtime)
+
+        copy_csv('results/results_MIQKMEANS.csv', 'results/csv/results_MIQKMEANS_k{}s30'.format(k))
+        copy_csv('results/results_KMEANS.csv', 'results/csv/results_KMEANS_k{}s30'.format(k))
+
+        plt.figure()
+        pca = PCA()
+        data_pc = pca.fit_transform(cur_data)
+        plt.scatter(data_pc[:, 0], data_pc[:, 1], c=kmeans_clusters)
+        plt.xlabel("PC1")
+        plt.ylabel("PC2")
+        plt.figure()
+        plt.scatter(data_pc[:, 0], data_pc[:, 1], c=miq_clusters)
+        plt.xlabel("PC1")
+        plt.ylabel("PC2")
+        plt.show()
+
+    x = test_centers
+    plt.plot(x, kmeans_losses)
+    plt.plot(x, miq_losses)
+    plt.xlabel("Number of clusters")
+    plt.ylabel("Loss value")
+    plt.legend(["Kmeans", "MIQKmeans"])
+    plt.title("Loss Values")
+
+    plt.figure()
+    plt.plot(x, kmeans_runtimes)
+    plt.plot(x, miq_runtimes)
+    plt.xlabel("Number of clusters")
+    plt.ylabel("Runtime(s)")
+    plt.legend(["Kmeans", "MIQKmeans"])
+    plt.title("Runtimes")
+
+    plt.show()
 
 
 def main():
     data = None
     k = None
 
-    # data, k = get_dataset(DATASET)
-    # if data is None:
-    #    raise Exception("NO DATA AVAILABLE")
-    # if k is None:
-    #     raise Exception("NUMBER OF CLUSTERS NOT AVAILABLE")
+    #test_synthetic_data()
 
-    """ 
-    kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(data, k)
-    miq_clusters, miq_loss, miq_runtime = miq_kmeans(data, k)
-
-    pca = PCA()
-    data_pc = pca.fit_transform(data)
-    plt.figure(1)
-    plt.scatter(data_pc[:, 0], data_pc[:, 1], c=kmeans_clusters)
-    plt.figure(2)
-    plt.scatter(data_pc[:, 0], data_pc[:, 1], c=miq_clusters)
-    plt.show()
-
-    plot_all()
-    """
-
-    test_synthetic_datasets()
-
+    test_real_data()
 
 if __name__ == '__main__':
     main()
