@@ -6,6 +6,21 @@ Lorenzo Baiardi & Thomas Del Moro
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.decomposition import PCA
+
+
+def copy_csv(filename, copy_filename):
+    df = pd.read_csv(filename, sep=";")
+    df.to_csv(copy_filename, sep=";")
+
+def plot_dataset(data):
+    plt.figure()
+    pca = PCA()
+    data_pc = pca.fit_transform(data)
+    plt.scatter(data_pc[:, 0], data_pc[:, 1])
+    plt.xlabel("PC1")
+    plt.ylabel("PC2")
+    plt.show()
 
 
 def plot_loss_runtime():
@@ -184,14 +199,3 @@ def plot_test_centers():
     plt.savefig("results/plots/loss_centers_real.png")
     plt.show()
 
-
-def main():
-    plot_test_size()
-
-    plot_test_features()
-
-    plot_test_centers()
-
-
-if __name__ == '__main__':
-    main()
