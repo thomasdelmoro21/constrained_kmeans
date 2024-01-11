@@ -10,8 +10,8 @@ from miqkmeans import MIQKMeans, header_miqkmeans_result
 from handle_data import get_dataset
 from utils import *
 
-DATASET = 1
-TEST = 1    # 1: test size, 2: test features, 3: test centers
+DATASET = 2
+TEST = 3    # 1: test size, 2: test features, 3: test centers
 
 
 def kmeans(data, k):
@@ -20,9 +20,9 @@ def kmeans(data, k):
     return m.solve()
 
 
-def miq_kmeans(data, k):
+def miq_kmeans(data, k, timelimit):
     header_miqkmeans_result()
-    m = MIQKMeans("constrained_kmeans", data, k)
+    m = MIQKMeans("constrained_kmeans", data, k, timelimit)
     return m.solve()
 
 
@@ -40,7 +40,7 @@ def test_sizes():
         cur_data = cur_data.iloc[:size, :4]
         k = 3
         kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(cur_data, k)
-        miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k)
+        miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k, cur_data.shape[0] * 10)
 
         print(f"\n**TEST: SIZE {size}")
         print(f"KMEANS LOSS: {kmeans_loss}")
@@ -101,7 +101,7 @@ def test_features():
         cur_data = cur_data.iloc[:30, :n_features]
         k = 3
         kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(cur_data, k)
-        miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k)
+        miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k, 300 + 50 * n_features)
 
         print(f"\n**TEST: FEATURES {n_features}")
         print(f"KMEANS LOSS: {kmeans_loss}")
@@ -162,7 +162,7 @@ def test_centers():
         cur_data = cur_data.iloc[:30, :4]
         k = n_centers
         kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(cur_data, k)
-        miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k)
+        miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k, n_centers*100)
 
         print(f"\n**TEST: REAL DATA {k} centers")
         print(f"KMEANS LOSS: {kmeans_loss}")
@@ -175,8 +175,8 @@ def test_centers():
         miq_losses.append(miq_loss)
         miq_runtimes.append(miq_runtime)
 
-        copy_csv('results/results_MIQKMEANS.csv', 'results/csv/results_MIQKMEANS_k{}s30'.format(k))
-        copy_csv('results/results_KMEANS.csv', 'results/csv/results_KMEANS_k{}s30'.format(k))
+        copy_csv('results/results_MIQKMEANS.csv', 'results/csv/results_MIQKMEANS_k{}'.format(k))
+        copy_csv('results/results_KMEANS.csv', 'results/csv/results_KMEANS_k{}'.format(k))
 
         plt.figure()
         pca = PCA()

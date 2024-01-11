@@ -54,7 +54,7 @@ def plot_loss_runtime():
 
 def plot_test_size():
     # plot di tutti i runtime in cui miq supera kmeans
-    test_sizes = [10, 20, 30, 40, 50, 60]
+    test_sizes = [20, 40, 60, 80, 100, 120]
     kmeans_runtimes = []
     miq_runtimes = []
     miq_best_runtimes = []
@@ -85,7 +85,7 @@ def plot_test_size():
     plt.plot(test_sizes, miq_runtimes, '-o', color='red')
     plt.xlabel("Number of elements")
     plt.ylabel("Runtime(s)")
-    #plt.ylim([0, 10])
+    #plt.ylim([0, 300])
     plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
     plt.title("Runtimes")
     plt.savefig("results/plots/runtime_size_real.png")
@@ -134,7 +134,7 @@ def plot_test_features():
     plt.plot(test_features, miq_runtimes, '-o', color='red')
     plt.xlabel("Number of features")
     plt.ylabel("Runtime(s)")
-    plt.ylim([0, 150])
+    #plt.ylim([0, 150])
     plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
     plt.title("Runtimes")
     plt.savefig("results/plots/runtime_features_real.png")
@@ -159,8 +159,8 @@ def plot_test_centers():
     kmeans_losses = []
     miq_best_losses = []
     for n_centers in test_centers:
-        k_path = "results/csv/results_KMEANS_k{}s30".format(n_centers)
-        m_path = "results/csv/results_MIQKMEANS_k{}s30".format(n_centers)
+        k_path = "results/csv/results_KMEANS_k{}".format(n_centers)
+        m_path = "results/csv/results_MIQKMEANS_k{}".format(n_centers)
         kmeans_data = pd.read_csv(k_path, sep=';')
         miq_data = pd.read_csv(m_path, sep=';')
         k_loss = kmeans_data.iloc[-1, 2]

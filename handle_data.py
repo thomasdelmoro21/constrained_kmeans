@@ -16,7 +16,7 @@ def get_dataset(dataset_id):
     k = None
 
     if dataset_id == 1:
-        data, _ = make_blobs(n_samples=1000, n_features=20, centers=5, cluster_std=10, random_state=110)
+        data, _ = make_blobs(n_samples=1000, n_features=20, centers=4, center_box=(-30, 30), cluster_std=10, random_state=110)
         n_features = data.shape[1]
         col_names = []
         for i in range(n_features):
@@ -25,14 +25,13 @@ def get_dataset(dataset_id):
         plot_dataset(data)
 
     if dataset_id == 2:
-        data, _ = make_sparse_uncorrelated(n_samples=100, n_features=10, random_state=110)
+        data, _ = make_blobs(n_samples=1000, n_features=20, centers=5, center_box=(-10, 10), cluster_std=10, random_state=110)
         n_features = data.shape[1]
         col_names = []
         for i in range(n_features):
             col_names.append('V{}'.format(i + 1))
         data = pd.DataFrame(data, columns=col_names)
-        k = 5
-        print(data.head())
+        plot_dataset(data)
 
     if dataset_id == 3:
         data, _ = make_moons(n_samples=1000, noise=.05)

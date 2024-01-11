@@ -8,13 +8,13 @@ from timeit import default_timer as timer
 
 
 class MIQKMeans:
-    def __init__(self, name, data, k):
+    def __init__(self, name, data, k, timelimit):
         self.data = data  # dataset
         self.k = k  # classes
         self.n = data.shape[0]  # number of elements
         self.N = data.shape[1]  # number of features
-        self.bigM = 500
-        self.timeout = 1000
+        self.bigM = 200
+        self.timeout = timelimit
         self.centroids = dict()  # centroids of clusters
         self.indicators = dict()  # indicator variable of data point being associated with cluster
         self.vars = dict()  # residual variables per component
