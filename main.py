@@ -10,8 +10,8 @@ from miqkmeans import MIQKMeans, header_miqkmeans_result
 from handle_data import get_dataset
 from utils import *
 
-DATASET = 2
-TEST = 3    # 1: test size, 2: test features, 3: test centers
+DATASET = 1
+TEST = 1    # 1: test size, 2: test features, 3: test centers
 
 
 def kmeans(data, k):
