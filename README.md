@@ -5,4 +5,6 @@ K-Means è uno degli algoritmi di clustering più conosciuti. Si tratta di un me
 ## MIQP (Mixed Integer Quadratic Programming)
 Questa metodologia permette di formulare il problema di clustering vincolato in un modo totalmente diverso. L'algoritmo che si costruisce è capace di raggiungere l'ottimo globale del problema con ogni configuarzione, ovviamente a discapito della velocità di esecuzione. Informazioni più approfondite a riguardo sono descritte nella directory Documentation di questa repository.
 ## Esperimenti
-Per replicare i risultati, una volta clonata la repository basta selezionare in main.py il dataset che si vuole utilizzare tra quelli disponibili (DATASET = 1, 2, 3, 4). Infine, ancora in main.py, selezionare il test che si vuole effettuare (TEST = 1 (al variare del numero di elementi), 2 (al variare del numero di features), 3(al variare del numero di cluster)).
+Per replicare i risultati, una volta clonata la repository basta selezionare in main.py il dataset che si vuole utilizzare tra quelli disponibili, dopodiché, ancora in main.py, selezionare il test che si vuole effettuare 
+* (DATASET = 1, 2, 3, 4)
+* (TEST = 1 (al variare del numero di elementi), 2 (al variare del numero di features), 3(al variare del numero di cluster)).
