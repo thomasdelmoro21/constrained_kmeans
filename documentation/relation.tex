@@ -163,7 +163,7 @@
     Gli algoritmi sono poi stati confrontati anche in termini di risultati quantitativi, prima su dati sintetici manipolabili, poi su dataset real-world.
     Il primo dataset preso in considerazione è stato generato in modo da essere costituito da più cluster facilmente distinguibili. Si tratta di un dataset di 1000 elementi con 10 features ciascuno, generati da 4 diversi centroidi. In Figura \ref{sint} è mostrato uno scatterplot delle prime due componenti principali di tale dataset.
 
-    Gli esperimenti sono su sottoinsiemi di tale dataset, specificamente al variare di tre parametri fondamentali, ovvero il numero di esempi nel dataset, il numero di feature di tali elementi e il numero di cluster in cui raggruppare i dati. In tutti i casi è stato impostato un time-limit di 1000 secondi per la versione MIQP, in modo da ottenere risultati significativi in tempi ragionevoli.\\
+    Gli esperimenti sono stati eseguiti su sottoinsiemi di tale dataset, specificamente al variare di tre parametri fondamentali, ovvero il numero di esempi nel dataset, il numero di feature di tali elementi e il numero di cluster in cui raggruppare i dati. In tutti i casi è stato impostato un time-limit di 1000 secondi per la versione MIQP, in modo da ottenere risultati significativi in tempi ragionevoli.\\
     Per prima cosa, sono stati fissati il numero di cluster $K=3$ e il numero di feature $N=4$, mentre il numero di elementi è stato fatto variare in $n=10,20,...,80$. Ad ogni iterazione viene eseguito un mescolamento dei dati, in modo da prendere sempre elementi diversi. In Figura~\ref{fig:size_sint} sono mostrati i risultati ottenuti. Attraverso un'analisi real-time è stato possibile riportare (in rosso) il tempo necessario alla versione MIQP per raggiungere una soluzione migliore del competitor, ovviamente quando questa è stata raggiunta in periodi inferiori al time-limit impostato.
     Risulta evidente che all'aumentare del numero di esempi nel dataset, la versione MIQP impiega sempre più tempo per raggiungere la soluzione ottima. In particolare, per dataset di dimensioni maggiori di 50 elementi, la versione MIQP non riesce a raggiungere la soluzione sub-ottima ottenuta con K-means in tempi ragionevoli.\\
     \begin{figure}[H]
@@ -182,7 +182,7 @@
         \caption{Performance al variare del numero di elementi}
         \label{fig:size_sint}
      \end{figure}
-    Allo stesso modo è aspettabile che anche il numero di cluster scelto possa influenzare le performance dell'algoritmo. In Figura \ref{fig:k_sint} sono mostrati i risultati ottenuti fissando il numero di elementi $n=30$ e il numero di feature $N=4$. In particolare il numero di centroidi con cui viene inizializzato l'algoritmo sembra essere un fattore ancora più significativo per le performance della versione MIQP.
+    Allo stesso modo è aspettabile che anche il numero di cluster scelto possa influenzare le performance dell'algoritmo. In Figura \ref{fig:k_sint} sono mostrati i risultati ottenuti fissando il numero di elementi $n=40$ e il numero di feature $N=4$. In particolare il numero di centroidi con cui viene inizializzato l'algoritmo sembra essere un fattore ancora più significativo per le performance della versione MIQP.
     Mentre l'algoritmo Kmeans sembra non subire particolari variazioni all'aumentare del numero di cluster, quest'ultimo ragionevolemnte implica un importante aumento del numero di variabili binarie che devono essere gestite dal solver per la versione MIQP.\\
     \begin{figure}[H]
      \centering
@@ -200,7 +200,7 @@
         \caption{Performance al variare del numero di cluster}
         \label{fig:k_sint}
      \end{figure}
-    Diversamente, il numero di feature non varia la quantità di variabili di associazione tra esempi e cluster, dunque dovrebbe avere un'influenza minore sulla differenza di performance tra i due algoritmi. Si può infatti osservare in Figura \ref{fig:f_sint} che con tutti i valori di $N$ testati, sempre fissando $n=30$ e $K=3$ la variante MIQP riesce a raggiungere la soluzione sub-ottima ottenuta con K-means in tempi ragionevoli. È comunque presente una correlazione tra il numero di feature e il tempo di esecuzione della versione MIQP.\\
+    Diversamente, il numero di feature non varia la quantità di variabili di associazione tra esempi e cluster, dunque dovrebbe avere un'influenza minore sulla differenza di performance tra i due algoritmi. Si può infatti osservare in Figura \ref{fig:f_sint} che con quasi tutti i valori di $N$ testati, sempre fissando $n=40$ e $K=3$ la variante MIQP riesce a raggiungere la soluzione sub-ottima ottenuta con K-means in tempi ragionevoli. È comunque presente una correlazione tra il numero di feature e il tempo di esecuzione della versione MIQP.\\
     \begin{figure}[H]
      \centering
      \begin{subfigure}[t]{0.49\linewidth}
@@ -218,7 +218,7 @@
         \label{fig:f_sint}
      \end{figure}
     Dai test effettuati fin qui si può dedurre che in tutti i casi il tempo di esecuzione della versione MIQP dell'algoritmo è di gran lunga maggiore. D'altra parte, se si lavora con un insieme di dati relativamente piccolo, si riescono a ottenere cluster migliori anche in tempi ragionevoli.\\
-    Come era prevedibile la versione MIQP è particolarmente sensibile al numero di variabili binarie del problema \cite{lapucci}. Sia variando la dimensione del dataset che il numero di cluster è possibile notare che un numero di variabili intere superiore al valore approssimativo di 150 porta in quasi tutti i casi a un tempi dell'ordine delle migliaia di secondi per raggiungere la soluzione sub-ottima ottenuta con K-Means.\\
+    Come era prevedibile la versione MIQP è particolarmente sensibile al numero di variabili binarie del problema \cite{lapucci}. Sia variando la dimensione del dataset che il numero di cluster è possibile notare che un numero di variabili intere superiore al valore approssimativo di 160 porta in quasi tutti i casi a un tempi dell'ordine delle migliaia di secondi per raggiungere la soluzione sub-ottima ottenuta con K-Means.\\
 
     \begin{wrapfigure}{R}{0.40\textwidth}
     \includegraphics[width=1\linewidth]{../results/plots/dataset2}

@@ -10,8 +10,8 @@ from miqkmeans import MIQKMeans, header_miqkmeans_result
 from handle_data import get_dataset
 from utils import *
 
-DATASET = 1
-TEST = 1    # 1: test size, 2: test features, 3: test centers
+DATASET = 3     # 1: Synthetic 1, 2: Synthetic 2, 3: Heart Disease, 4: Coverage Type
+TEST = 2    # 1: test size, 2: test features, 3: test centers
 
 
 def kmeans(data, k):
@@ -29,7 +29,7 @@ def miq_kmeans(data, k, timelimit):
 def test_sizes():
     data, k = get_dataset(DATASET)
 
-    sizes = [10, 20, 30, 40, 50, 60]
+    sizes = [20, 40, 60, 80, 100, 120]
 
     kmeans_losses = []
     kmeans_runtimes = []
@@ -66,7 +66,6 @@ def test_sizes():
         plt.scatter(data_pc[:, 0], data_pc[:, 1], c=miq_clusters)
         plt.xlabel("PC1")
         plt.ylabel("PC2")
-        plt.show()
 
     x = sizes
     plt.plot(x, kmeans_losses)
@@ -83,8 +82,6 @@ def test_sizes():
     plt.ylabel("Runtime(s)")
     plt.legend(["Kmeans", "MIQKmeans"])
     plt.title("Runtimes")
-
-    plt.show()
 
 
 def test_features():
@@ -127,7 +124,6 @@ def test_features():
         plt.scatter(data_pc[:, 0], data_pc[:, 1], c=miq_clusters)
         plt.xlabel("PC1")
         plt.ylabel("PC2")
-        plt.show()
 
     x = features
     plt.plot(x, kmeans_losses)
@@ -145,8 +141,6 @@ def test_features():
     plt.legend(["Kmeans", "MIQKmeans"])
     plt.title("Runtimes")
 
-    plt.show()
-
 
 def test_centers():
     data, k = get_dataset(DATASET)
@@ -159,7 +153,7 @@ def test_centers():
     miq_runtimes = []
     for n_centers in centers:
         cur_data = data.sample(frac=1)
-        cur_data = cur_data.iloc[:30, :4]
+        cur_data = cur_data.iloc[:40, :4]
         k = n_centers
         kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(cur_data, k)
         miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k, n_centers*100)
@@ -188,7 +182,6 @@ def test_centers():
         plt.scatter(data_pc[:, 0], data_pc[:, 1], c=miq_clusters)
         plt.xlabel("PC1")
         plt.ylabel("PC2")
-        plt.show()
 
     x = centers
     plt.plot(x, kmeans_losses)
@@ -205,8 +198,6 @@ def test_centers():
     plt.ylabel("Runtime(s)")
     plt.legend(["Kmeans", "MIQKmeans"])
     plt.title("Runtimes")
-
-    plt.show()
 
 
 def main():

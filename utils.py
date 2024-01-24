@@ -88,7 +88,18 @@ def plot_test_size():
     #plt.ylim([0, 300])
     plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
     plt.title("Runtimes")
-    plt.savefig("results/plots/runtime_size_real.png")
+    plt.savefig("results/log_plots/runtime_size_heart.png")
+
+    plt.figure()
+    plt.semilogy(test_sizes, kmeans_runtimes, '-o', color='#ff7f0e')
+    plt.semilogy(test_sizes, miq_best_runtimes, '-o', color='#2ca02c')
+    plt.semilogy(test_sizes, miq_runtimes, '-o', color='red')
+    plt.xlabel("Number of elements")
+    plt.ylabel("Runtime(s)")
+    #plt.ylim([0, 300])
+    plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
+    plt.title("Runtimes")
+    plt.savefig("results/log_plots/runtime_size_heart_log.png")
 
     plt.figure()
     x = np.asarray(test_sizes)
@@ -98,8 +109,7 @@ def plot_test_size():
     plt.ylabel("Loss value")
     plt.legend(["Kmeans", "MIQKmeans"])
     plt.title("Loss Values")
-    plt.savefig("results/plots/loss_size_real.png")
-    plt.show()
+    plt.savefig("results/log_plots/loss_size_heart.png")
 
 
 def plot_test_features():
@@ -137,7 +147,18 @@ def plot_test_features():
     #plt.ylim([0, 150])
     plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
     plt.title("Runtimes")
-    plt.savefig("results/plots/runtime_features_real.png")
+    plt.savefig("results/log_plots/runtime_features_heart.png")
+
+    plt.figure()
+    plt.semilogy(test_features, kmeans_runtimes, '-o', color='#ff7f0e')
+    plt.semilogy(test_features, miq_best_runtimes, '-o', color='#2ca02c')
+    plt.semilogy(test_features, miq_runtimes, '-o', color='red')
+    plt.xlabel("Number of features")
+    plt.ylabel("Runtime(s)")
+    #plt.ylim([0, 150])
+    plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
+    plt.title("Runtimes")
+    plt.savefig("results/log_plots/runtime_features_heart_log.png")
 
     plt.figure()
     x = np.asarray(test_features)
@@ -147,8 +168,7 @@ def plot_test_features():
     plt.ylabel("Loss value")
     plt.legend(["Kmeans", "MIQKmeans"])
     plt.title("Loss Values")
-    plt.savefig("results/plots/loss_features_real.png")
-    plt.show()
+    plt.savefig("results/log_plots/loss_features_heart.png")
 
 
 def plot_test_centers():
@@ -186,7 +206,18 @@ def plot_test_centers():
     # plt.ylim([0, 10])
     plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
     plt.title("Runtimes")
-    plt.savefig("results/plots/runtime_centers_real.png")
+    plt.savefig("results/log_plots/runtime_centers_heart.png")
+
+    plt.figure()
+    plt.semilogy(test_centers, kmeans_runtimes, '-o', color='#ff7f0e')
+    plt.semilogy(test_centers, miq_best_runtimes, '-o', color='#2ca02c')
+    plt.semilogy(test_centers, miq_runtimes, '-o', color='red')
+    plt.xlabel("Number of clusters")
+    plt.ylabel("Runtime(s)")
+    # plt.ylim([0, 10])
+    plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
+    plt.title("Runtimes")
+    plt.savefig("results/log_plots/runtime_centers_heart_log.png")
 
     plt.figure()
     x = np.asarray(test_centers)
@@ -196,6 +227,5 @@ def plot_test_centers():
     plt.ylabel("Loss value")
     plt.legend(["Kmeans", "MIQKmeans"])
     plt.title("Loss Values")
-    plt.savefig("results/plots/loss_centers_real.png")
-    plt.show()
+    plt.savefig("results/log_plots/loss_centers_heart.png")
 

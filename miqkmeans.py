@@ -13,7 +13,7 @@ class MIQKMeans:
         self.k = k  # classes
         self.n = data.shape[0]  # number of elements
         self.N = data.shape[1]  # number of features
-        self.bigM = 200
+        self.bigM = 500
         self.timeout = timelimit
         self.centroids = dict()  # centroids of clusters
         self.indicators = dict()  # indicator variable of data point being associated with cluster
