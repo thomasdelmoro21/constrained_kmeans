@@ -2,6 +2,7 @@
 @authors
 Lorenzo Baiardi & Thomas Del Moro
 """
+import math
 
 from sklearn.datasets import *
 
@@ -10,8 +11,8 @@ from miqkmeans import MIQKMeans, header_miqkmeans_result
 from handle_data import get_dataset
 from utils import *
 
-DATASET = 3     # 1: Synthetic 1, 2: Synthetic 2, 3: Heart Disease, 4: Coverage Type
-TEST = 2    # 1: test size, 2: test features, 3: test centers
+DATASET = 1     # 1: Synthetic 1, 2: Synthetic 2, 3: Heart Disease, 4: Coverage Type
+TEST = 1    # 1: test size, 2: test features, 3: test centers
 
 
 def kmeans(data, k):
@@ -95,7 +96,7 @@ def test_features():
     miq_runtimes = []
     for n_features in features:
         cur_data = data.sample(frac=1)
-        cur_data = cur_data.iloc[:30, :n_features]
+        cur_data = cur_data.iloc[:40, :n_features]
         k = 3
         kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(cur_data, k)
         miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k, 300 + 50 * n_features)
@@ -200,6 +201,47 @@ def test_centers():
     plt.title("Runtimes")
 
 
+def test_multiple_inits():
+    data, k = get_dataset(DATASET)
+    centers = [3]
+    sizes = [40, 60, 80, 100]
+    kmeans_losses = []
+    kmeans_runtimes = []
+    miq_losses = []
+    miq_runtimes = []
+    vars = []
+    for n_centers in centers:
+        for size in sizes:
+            n_vars = size * n_centers
+            vars.append(n_vars)
+            cur_data = data.sample(frac=1)
+            cur_data = cur_data.iloc[:size, :4]
+            k = n_centers
+            kmeans_min_loss = math.inf
+            kmeans_min_runtime = math.inf
+            for i in range(10):
+                kmeans_clusters, kmeans_loss, kmeans_runtime = kmeans(cur_data, k)
+                if kmeans_loss < kmeans_min_loss:
+                    kmeans_min_loss = kmeans_loss
+                    kmeans_min_runtime = kmeans_runtime
+            miq_clusters, miq_loss, miq_runtime = miq_kmeans(cur_data, k, 1000)
+
+            print(f"\n**TEST: SIZE {size}")
+            print(f"KMEANS LOSS: {kmeans_min_loss}")
+            print(f"KMEANS RUNTIME: {kmeans_min_runtime}")
+            print(f"MIQKMEANS LOSS: {miq_loss}")
+            print(f"MIQKMEANS RUNTIME: {miq_runtime}")
+
+            kmeans_losses.append(kmeans_min_loss)
+            kmeans_runtimes.append(kmeans_min_runtime)
+            miq_losses.append(miq_loss)
+            miq_runtimes.append(miq_runtime)
+
+            copy_csv('results/results_MIQKMEANS.csv', 'results/csv/results_MIQKMEANS_mult{}'.format(n_vars))
+
+    plot_multiple_inits(vars, kmeans_losses, kmeans_runtimes)
+
+
 def main():
 
     if TEST == 1:
@@ -211,8 +253,8 @@ def main():
     elif TEST == 3:
         test_centers()
         plot_test_centers()
-    else:
-        pass
+    elif TEST == 4:
+        test_multiple_inits()
 
 
 if __name__ == '__main__':

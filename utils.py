@@ -13,6 +13,7 @@ def copy_csv(filename, copy_filename):
     df = pd.read_csv(filename, sep=";")
     df.to_csv(copy_filename, sep=";")
 
+
 def plot_dataset(data):
     plt.figure()
     pca = PCA()
@@ -229,3 +230,54 @@ def plot_test_centers():
     plt.title("Loss Values")
     plt.savefig("results/log_plots/loss_centers_heart.png")
 
+
+def plot_multiple_inits(vars, kmeans_losses, kmeans_runtimes):
+    miq_runtimes = []
+    miq_best_runtimes = []
+    miq_best_losses = []
+    for n_vars in vars:
+        m_path = "results/csv/results_MIQKMEANS_mult{}".format(n_vars)
+        miq_data = pd.read_csv(m_path, sep=';')
+        k_loss = kmeans_losses[vars.index(n_vars)]
+        m_time = None
+        for l in miq_data.iloc[:, 2]:
+            if l < k_loss:
+                m_loss = l
+                m_time = miq_data.iloc[miq_data[miq_data.iloc[:, 2] == l].index[0], 1]
+                break
+        miq_runtimes.append(m_time)
+        m_best_loss = miq_data.iloc[-1, 2]
+        miq_best_losses.append(m_best_loss)
+        miq_best_runtimes.append(miq_data.iloc[miq_data[miq_data.iloc[:, 2] == m_best_loss].index[0], 1])
+
+    plt.figure()
+    plt.plot(vars, kmeans_runtimes, '-o', color='#ff7f0e')
+    plt.plot(vars, miq_best_runtimes, '-o', color='#2ca02c')
+    plt.plot(vars, miq_runtimes, '-o', color='red')
+    plt.xlabel("Number of binary variables")
+    plt.ylabel("Runtime(s)")
+    #plt.ylim([0, 300])
+    plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
+    plt.title("Runtimes")
+    plt.savefig("results/log_plots/runtime_multiple_inits_heart.png")
+
+    plt.figure()
+    plt.semilogy(vars, kmeans_runtimes, '-o', color='#ff7f0e')
+    plt.semilogy(vars, miq_best_runtimes, '-o', color='#2ca02c')
+    plt.semilogy(vars, miq_runtimes, '-o', color='red')
+    plt.xlabel("Number of binary variables")
+    plt.ylabel("Runtime(s)")
+    #plt.ylim([0, 300])
+    plt.legend(["Kmeans", "MIQKmeans-best", "MIQ loss < Kmeans loss"])
+    plt.title("Runtimes")
+    plt.savefig("results/log_plots/runtime_multiple_inits_heart_log.png")
+
+    plt.figure()
+    x = np.asarray(vars)
+    plt.bar(x-4, kmeans_losses, width=8, color=['#ff7f0e'])
+    plt.bar(x+4, miq_best_losses, width=8, color=['#2ca02c'])
+    plt.xlabel("Number of binary variables")
+    plt.ylabel("Loss value")
+    plt.legend(["Kmeans", "MIQKmeans"])
+    plt.title("Loss Values")
+    plt.savefig("results/log_plots/loss_multiple_inits_heart.png")
