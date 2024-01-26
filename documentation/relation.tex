@@ -29,18 +29,18 @@
 \begin{document}
     \maketitle
     \begin{abstract}
-        K-means è uno degli algoritmi più conosciuti e utilizzati per molti problemi di clustering. In questo lavoro analizziamo un approccio innovativo del k-means, basato sulla tecnica di Mixed-Integer Quadratic Programming (MIQP). Attraverso l'utilizzo di dataset sintetici e real-world valutiamo le performance di questa tecnica, in modo da comprenderne le
+        K-means è uno degli algoritmi più conosciuti e utilizzati per molti problemi di clustering. In questo lavoro analizziamo un approccio innovativo del k-means, basato sulla tecnica di Mixed-Integer Quadratic Programming (MIQP). Attraverso l'utilizzo di dataset sintetici e real-world valutiamo le performance di questo metodo, in modo da comprenderne le
         eventuali potenzialità e criticità in ambito empirico.
     \end{abstract}
 
 
     \section{Introduzione}
 
-    Questo lavoro consiste nell'analisi sperimentale dell'approccio MIQP relativamente all'algoritmo K-means. In particolare i nostri studi si concentrano su un confronto tra tale versione con quella originale, sulla base di vari aspetti quali la l'andamento della funzione obiettivo e il tempo di esecuzione al variare dei parametri del dataset utilizzato.
+    Questo lavoro consiste nell'analisi sperimentale dell'approccio MIQP relativamente all'algoritmo K-Means. In particolare i nostri studi si concentrano su un confronto tra tale versione con quella originale, sulla base di vari aspetti quali la l'andamento della funzione obiettivo e il tempo di esecuzione al variare dei parametri del dataset utilizzato.
 
     \subsection{K-Means}
 
-    Consideriamo un dataset numerico $D=\{x_i \in \mathbb{R}^{N}, i=1,\dots,n$. Applicare l'algoritmo k-means significa partizionare gli esempi $x_i$ in $K$ cluster, con $K$ fissato, in modo da minimizzare la somma delle distanze euclidee al quadrato tra ogni elemento del dataset e il centroide del cluster al quale è assegnato.
+    Consideriamo un dataset numerico $D=\{x_i \in \mathbb{R}^{N}, i=1,\dots,n\}$. Applicare l'algoritmo K-Means significa partizionare gli esempi $x_i$ in $K$ cluster, con $K$ fissato, in modo da minimizzare la somma delle distanze euclidee al quadrato tra ogni elemento del dataset e il centroide del cluster al quale è assegnato.
     Formalmente il problema è dato da
     \begin{equation}
         \min_{\begin{subarray}{c}
@@ -50,8 +50,8 @@
         \frac{1}{2} \sum_{i=1}^{n} \sum_{k=1}^{K} \delta_{ik} \|x_i-z_k\|^2
         \label{eq:kmeans}
     \end{equation}
-    dove $\delta_{ik}$ sono le variabili indicatrici dell'associazione tra il punto $x_i$ e il cluster $k$, mentre le $z_k$ indentificano il centroide del cluster $k$.\\
-    A questo problema sono poi stati aggiunti dei vincoli di appartenenza, per cui ogni punto può essere associato a un solo cluster e ad ogni cluster devono essere associati almeno $C$ elementi. Dunque il problema diventa
+    dove $\delta_{ik}$ sono le variabili indicatrici dell'associazione tra l'esempio $x_i$ e il cluster $k$, mentre le $z_k$ indentificano il centroide del cluster $k$.\\
+    A questo problema sono poi stati aggiunti dei vincoli in modo da ottenere un problema di Hard Clustering bilanciato, per cui ogni punto può essere associato a un solo cluster e ad ogni cluster devono essere associati almeno $C$ elementi. Dunque il problema diventa
     \begin{equation}
         \begin{aligned}
             \min_{\substack{
@@ -164,7 +164,7 @@
     Il primo dataset preso in considerazione è stato generato in modo da essere costituito da più cluster facilmente distinguibili. Si tratta di un dataset di 1000 elementi con 10 features ciascuno, generati da 4 diversi centroidi. In Figura \ref{sint} è mostrato uno scatterplot delle prime due componenti principali di tale dataset.
 
     Gli esperimenti sono stati eseguiti su sottoinsiemi di tale dataset, specificamente al variare di tre parametri fondamentali, ovvero il numero di esempi nel dataset, il numero di feature di tali elementi e il numero di cluster in cui raggruppare i dati. In tutti i casi è stato impostato un time-limit di 1000 secondi per la versione MIQP, in modo da ottenere risultati significativi in tempi ragionevoli.\\
-    Per prima cosa, sono stati fissati il numero di cluster $K=3$ e il numero di feature $N=4$, mentre il numero di elementi è stato fatto variare in $n=10,20,...,80$. Ad ogni iterazione viene eseguito un mescolamento dei dati, in modo da prendere sempre elementi diversi. In Figura~\ref{fig:size_sint} sono mostrati i risultati ottenuti. Attraverso un'analisi real-time è stato possibile riportare (in rosso) il tempo necessario alla versione MIQP per raggiungere una soluzione migliore del competitor, ovviamente quando questa è stata raggiunta in periodi inferiori al time-limit impostato.
+    Per prima cosa, sono stati fissati il numero di cluster $K=3$ e il numero di feature $N=4$, mentre il numero di elementi è stato fatto variare in $n=10,20,\dots,80$. Ad ogni iterazione viene eseguito un mescolamento dei dati, in modo da prendere sempre elementi diversi. In Figura~\ref{fig:size_sint} sono mostrati i risultati ottenuti. Attraverso un'analisi real-time è stato possibile riportare (in rosso) il tempo necessario alla versione MIQP per raggiungere una soluzione migliore del competitor, ovviamente quando questa è stata raggiunta in periodi inferiori al time-limit impostato.
     Risulta evidente che all'aumentare del numero di esempi nel dataset, la versione MIQP impiega sempre più tempo per raggiungere la soluzione ottima. In particolare, per dataset di dimensioni maggiori di 50 elementi, la versione MIQP non riesce a raggiungere la soluzione sub-ottima ottenuta con K-means in tempi ragionevoli. Si può notare che anche K-Means sia influenzato dal numero di esempi, tuttavia in modo molto meno significativo.\\
     \begin{figure}[H]
      \centering
@@ -183,7 +183,7 @@
         \label{fig:size_sint}
      \end{figure}
     Allo stesso modo è aspettabile che anche il numero di cluster scelto possa influenzare le performance dell'algoritmo. In Figura \ref{fig:k_sint} sono mostrati i risultati ottenuti fissando il numero di elementi $n=40$ e il numero di feature $N=4$. In particolare il numero di centroidi con cui viene inizializzato l'algoritmo sembra essere un fattore ancora più significativo per le performance della versione MIQP.
-    Mentre l'algoritmo Kmeans sembra non subire grandi variazioni all'aumentare del numero di cluster, quest'ultimo ragionevolemnte implica un importante aumento del numero di variabili binarie che devono essere gestite dal solver per la versione MIQP.\\
+    Mentre l'algoritmo Kmeans sembra non subire grandi variazioni dovute all'aumento del numero di cluster, quest'ultimo ragionevolemnte implica un importante crescita del numero di variabili binarie che devono essere gestite dal solver per la versione MIQP.\\
     \begin{figure}[H]
      \centering
      \begin{subfigure}[t]{0.49\linewidth}
@@ -218,7 +218,7 @@
         \label{fig:f_sint}
      \end{figure}
     Dai test effettuati fin qui si può dedurre che in tutti i casi il tempo di esecuzione della versione MIQP dell'algoritmo è di gran lunga maggiore. D'altra parte, se si lavora con un insieme di dati relativamente piccolo, si riescono a ottenere cluster migliori anche in tempi ragionevoli.\\
-    Come era prevedibile la versione MIQP è particolarmente sensibile al numero di variabili binarie del problema \cite{lapucci}. Sia variando la dimensione del dataset che il numero di cluster è possibile notare che un numero di variabili intere superiore al valore approssimativo di 150 porta in quasi tutti i casi a un tempi dell'ordine delle migliaia di secondi per raggiungere la soluzione sub-ottima ottenuta con K-Means.\\
+    Come era prevedibile la formulazione MIQP è particolarmente sensibile al numero di variabili binarie del problema \cite{lapucci}. Sia variando la dimensione del dataset che il numero di cluster è possibile notare che un numero di variabili intere superiore al valore approssimativo di 150 porta in quasi tutti i casi a un tempi dell'ordine delle migliaia di secondi per raggiungere la soluzione sub-ottima ottenuta con K-Means.\\
 
     \begin{wrapfigure}{R}{0.40\textwidth}
     \includegraphics[width=1\linewidth]{../results/plots/dataset2}
@@ -226,7 +226,7 @@
     \label{sint_sint}
     \end{wrapfigure}
     Dopodiché sono stati replicati gli stessi esperimenti su un dataset con cluster molto meno distinguibili. Si tratta di un dataset di 1000 esempi con 10 features, generati a partire da 5 cluster diversi ma con poca distanza tra i centroidi. Lo scatterplot delle due componenti principali è riportato in Figura \ref{sint_sint}.\\
-    I risultati ottenuti sono molto simili ai precedenti, tuttavia è possibile notare che la versione MIQP riesce a superare la soluzione sub-ottima ottenuta con K-means anche per dataset di dimensioni maggiori (in questo caso il numero di elementi è stato variato nell'intervallo $n=20,...,120$). Ciò potrebbe dipendere dal fatto che il K-Means fosse avvantaggiato dalla lontananza tra i diversi cluster generati.\\
+    I risultati ottenuti sono molto simili ai precedenti, tuttavia è possibile notare che la versione MIQP riesce a superare la soluzione sub-ottima ottenuta con K-means anche per dataset di dimensioni maggiori (in questo caso il numero di elementi è stato variato nell'intervallo $n=20,\dots,120$). Ciò potrebbe dipendere dal fatto che K-Means fosse avvantaggiato dalla lontananza tra i diversi cluster generati.\\
     In questo caso risulta più evidente che del numero di features abbia un impatto molto minore sul tempo di esecuzione della formulazione MIQP.\\
     \begin{figure}[h]
      \begin{subfigure}{0.32\linewidth}
@@ -254,7 +254,7 @@
     \subsection{Dataset real-world}
     In questa sezione analizziamo gli esperimenti svolti su un dataset real-world. Il dataset considerato è Heart Disease Patients. Contiene 303 esempi di 11 feature di varie tipologie.
     Gli esperimenti sono stati eseguiti su sottoinsiemi di tale dataset con caratteristiche diverse. Anche in questo caso, infatti, sono stati variati parametri quali numero di esempi, numero di features e numero di cluster. In tutti i casi è stato impostato un time-limit per la versione MIQP, in modo da ottenere risultati significativi in tempi ragionevoli.\\
-    La Figura \ref{fig:size_real} mostra i risultati ottenuti al variare del numero di elementi del dataset, fissando il numero di features $N=4$ e il numero di cluster $K=3$. Come già accennato in precedenza, la versione MIQP dovrebbe essere particolarmente sensibile al numero di variabili binarie del problema; poiché il numero di elementi è fatto variare in $n=20,...,120$, il numero di variabili in gioco ha un un minimo di 60 e un massimo di 360.\\
+    La Figura \ref{fig:size_real} mostra i risultati ottenuti al variare del numero di elementi del dataset, fissando il numero di features $N=4$ e il numero di cluster $K=3$. Come già accennato in precedenza, la versione MIQP dovrebbe essere particolarmente sensibile al numero di variabili binarie del problema; poiché il numero di elementi è fatto variare in $n=20,\dots,120$, il numero di variabili in gioco ha un un minimo di 60 e un massimo di 360.\\
     \begin{figure}[H]
      \centering
      \begin{subfigure}[t]{0.49\linewidth}
@@ -271,8 +271,8 @@
         \caption{Performance al variare del numero di elementi}
         \label{fig:size_real}
      \end{figure}
-    Risulta evidente che all'aumentare del numero di esempi nel dataset, la versione MIQP impiega sempre più tempo per raggiungere la soluzione ottima. In particolare, per dataset di dimensioni maggiori di 40 elementi, la versione MIQP non riesce a raggiungere la soluzione sub-ottima ottenuta con K-means in tempi ragionevoli.\\
-    Allo stesso modo è aspettabile che anche il numero di cluster scelto possa influenzare le performance dell'algoritmo. In Figura \ref{fig:k_real} sono mostrati i risultati ottenuti fissando il numero di elementi $n=40$ e il numero di features $N=4$.
+    Risulta evidente che all'aumentare del numero di esempi nel dataset, la versione MIQP impiega sempre più tempo per raggiungere la soluzione ottima. Nonostante ciò sembra che in questo caso la quantità di variabili gestibili dal solver possa essere maggiore, in quanto l'algoritmo è riuscito a fare meglio di K-Means in tempi inferiori al time-limit di 1000 secondi anche per dataset più grandi.\\
+    Allo stesso modo è aspettabile che anche il numero di cluster scelto possa influenzare le performance dell'algoritmo. In Figura \ref{fig:k_real} sono mostrati i risultati ottenuti fissando il numero di elementi $n=40$ e il numero di features $N=4$. Anche per quanto riguarda il numero di cluster, sembra che la versione MIQP possa essere in grado di gestire un numero maggiore di variabili rispetto ai casi precedenti.
     \begin{figure}[H]
      \centering
      \begin{subfigure}[t]{0.485\linewidth}
@@ -289,7 +289,7 @@
         \caption{Performance al variare del numero di cluster}
         \label{fig:k_real}
      \end{figure}
-    Diversamente, il numero di feature non varia la quantità di variabili di associazione tra esempi e cluster, dunque dovrebbe avere un'influenza minore sulla differenza di performance. Si può infatti osservare in Figura \ref{fig:f_real} che, con tutti i valori di $N$ testati, la variante MIQP riesce a raggiungere la soluzione sub-ottima ottenuta con K-means in tempi ragionevoli.
+    Diversamente, il numero di feature non varia la quantità di variabili di associazione tra esempi e cluster, dunque dovrebbe avere un'influenza minore sulla differenza di performance. Si può infatti osservare in Figura \ref{fig:f_real} che con tutti i valori di $N$ testati, sempre fissando $n=40$ e $K=3$, la variante MIQP riesce a raggiungere la soluzione sub-ottima ottenuta con K-means in tempi ragionevoli.
     \begin{figure}[H]
      \centering
      \begin{subfigure}[t]{0.49\linewidth}
@@ -303,7 +303,7 @@
          \includegraphics[width=\linewidth]{../results/log_plots/runtime_features_heart_log}
          \caption{Tempo di esecuzione: tempo impiegato da Kmeans per raggiungere la soluzione sub-ottimale (arancio); tempo impiegato da MIQP per raggiungere la migliore soluzione trovata (verde); tempo impiegato da MIQP per raggiungere una soluzione migliore di Kmeans (rosso)}
      \end{subfigure}
-        \caption{Performance al variare del numero di cluster}
+        \caption{Performance al variare del numero di features}
         \label{fig:f_real}
      \end{figure}
     I risultati ottenuti con il dataset Heart Disease Patients sono molto simili a quelli ottenuti con i dataset sintetici. In particolare, anche in questo caso la versione MIQP è particolarmente sensibile al numero di variabili binarie del problema, ma sembra che riesca a ottenere buoni risultati anche fino alle 240 variabili.
@@ -311,7 +311,7 @@
     \subsection{Inizializzazioni multiple di K-Means}
     Infine, è stato eseguito un ulteriore esperimento per valutare le performance della versione MIQP rispetto a K-Means. In particolare, ad ogni iterazione è stato eseguito K-Means più volte, inizializzando ogni volta i centroidi con un set di punti diverso, per poi scegliere la soluzione migliore trovata tra tutte le esecuzioni. In questo modo è stato possibile ottenere una soluzione sub-ottima migliore rispetto a quella ottenuta con una singola esecuzione dell'algoritmo.
     Il test è stato effettuato di nuovo sul dataset Heart Disease Patients, fissando il numero di feature $N=4$ e variando il numero di variabili binarie nel range $120,...,300$. Il numero di diverse esecuzioni di K-Means è stato fissato a 10.\\
-    \begin{figure}[H]
+    \begin{figure}[h]
         \centering
         \begin{subfigure}[t]{0.49\linewidth}
             \centering
@@ -327,13 +327,13 @@
             \caption{Performance al variare del numero di variabili binarie del problema}
             \label{fig:multi_init}
     \end{figure}
-    Come è possibile osservare in Figura \ref{fig:multi_init}, nel caso in cui l'algoritmo K-Means venga eseguito più volte a partire da diversi centroidi iniziali, la migliore soluzione ottenuta è difficilmente raggiungibile dalla versione MIQP in tempi brevi. Si deve inoltre notare che, nonostante K-Means sia eseguito 10 volte, il tempo totale impiegato per l'esecuzione rimane di gran lunga inferiore rispetto alla singola iterazione dell'algoritmo MIQP.
+    In Figura \ref{fig:multi_init} sono riportati i risultati ottenuti, in particolare per K-Means i tempi sono da considerarsi complessivi di tutte le esecuzioni. Come è possibile osservare nel caso in cui l'algoritmo K-Means venga eseguito più volte a partire da diversi centroidi iniziali, la migliore soluzione ottenuta è difficilmente raggiungibile dalla versione MIQP in tempi brevi. Si deve inoltre notare che, nonostante K-Means sia eseguito 10 volte, il tempo totale impiegato per l'esecuzione rimane di gran lunga inferiore rispetto alla singola iterazione dell'algoritmo MIQP.
 
     \section{Conclusioni}
-    In questo lavoro è stato analizzato un approccio innovativo del K-Means, basato sulla tecnica di Mixed-Integer Quadratic Programming (MIQP). Attraverso l'utilizzo di dataset sintetici e real-world sono state valutate le performance di questa tecnica, in modo da comprenderne le eventuali potenzialità e criticità in ambito empirico.\\
+    In questo lavoro è stato analizzato un approccio innovativo di K-Means, basato sulla tecnica di Mixed-Integer Quadratic Programming (MIQP). Attraverso l'utilizzo di dataset sintetici e real-world sono state valutate le performance di questo metodo, in modo da valutarne vantaggi e svantaggi in ambito empirico.\\
     Dai risultati ottenuti è possibile dedurre che la versione MIQP dell'algoritmo K-Means è particolarmente sensibile al numero di variabili binarie del problema, al cui aumento corrisponde una sempre peggiore efficienza. Ciò si verifica già con dataset dell'ordine delle decine di elementi, specialmente se devono essere raggruppati in un discreto numero di cluster.
-    Inoltre abbiamo notato che eseguendo più volte K-Means si ottengono in poco tempo soluzioni migliori, per i quali la versione MIQP ha bisogno di tempi relativamente lunghi.
-    Si può dunque si può supporre che l'approccio MIQP garantisca teoricamente il raggiungimento dell'ottimo globale, ma non sia facilmente scalabile in ambito pratico sulla quantità di dati processabili al giorno d'oggi.
+    Inoltre abbiamo notato che eseguendo più volte K-Means si ottengono in poco tempo valori di loss minori, per raggiungere i quali la versione MIQP ha bisogno di tempi relativamente lunghi.
+    Si può dunque supporre che l'approccio MIQP garantisca teoricamente il raggiungimento dell'ottimo globale, ma non sia facilmente scalabile in ambito pratico sulla quantità di dati processabili al giorno d'oggi.
 
 
     \begin{thebibliography}{9}
